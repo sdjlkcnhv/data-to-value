@@ -29,7 +29,7 @@ def probe(python, profile, language="eng"):
 
 def save_receipt(state_dir, result, profile):
     state_dir.mkdir(parents=True, exist_ok=True)
-    result = dict(result, profile=profile, skill_version="0.2.0", checked_at=datetime.now(timezone.utc).isoformat())
+    result = dict(result, profile=profile, skill_version="0.1.0", checked_at=datetime.now(timezone.utc).isoformat())
     result["page_display_and_callback"] = "not_tested_by_environment_setup"
     receipt = state_dir / ("runtime-" + profile + ".json")
     temporary = receipt.with_suffix(".json.tmp")

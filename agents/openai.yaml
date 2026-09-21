@@ -1,0 +1,4 @@
+interface:
+  display_name: "数据驱动研究与价值落地"
+  short_description: "先选择学术版或企业版，从真实数据发现研究问题或业务机会并落地"
+  default_prompt: "请使用 $data-to-value，先让我选择学术版或企业版，再核验现有数据，从中发现研究问题或业务机会，并形成可落地方案。"

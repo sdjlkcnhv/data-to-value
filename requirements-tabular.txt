@@ -1,0 +1,4 @@
+# Optional common-table runtime. Core preference/report pages use only Python's standard library.
+pandas>=2.3.3,<4
+openpyxl>=3.1.5,<4
+numpy>=1.26,<3

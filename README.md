@@ -2,13 +2,15 @@
 
 有数据集，不知道研究什么？有业务记录，不知道还能怎么用？
 
-**从已有数据出发，发现论文选题或业务机会，比较依据、风险和投入，由你选择下一步。**
+**把手里的数据，变成下一步值得做的选题和方案。**
+
+上传数据与说明，获得候选方向、评分比较和验证建议。你不必先想出题目，也不必先决定用什么模型。
 
 ![选择版本与权重、审核数据、生成并比较方案、由你选择](assets/cover.png)
 
-[下载安装包](https://github.com/sdjlkcnhv/data-to-value/releases/tag/v0.1.0) · [安装说明](INSTALL.md) · [体验样例](examples/README.md) · [支持范围](references/compatibility.md)
+[下载安装包](https://github.com/sdjlkcnhv/data-to-value/releases/tag/v0.1.0) · [安装说明](INSTALL.md) · [体验样例](examples/README.md)
 
-当前为私有调试包，下载需要获授权的 GitHub 账号；尚未在 SkillHub 公开上架。
+当前下载需获授权的 GitHub 账号。
 
 ## 适合哪些需求
 
@@ -25,7 +27,7 @@
 - 第一步同时确认学术版或企业版，以及各项评价指标的权重。
 - 对照说明与实际数据，记录可用事实、冲突和读取范围。
 - 从证据形成不同方向；每项说明价值来源、关键未知及最低成本的验证办法。
-- 通常精选三个候选，按你的偏好评分比较；证据不足时少给，未知分项不编分数。
+- 根据数据精选候选，按你重视的指标评分比较，说明各自优势和投入。
 - 你选定方向后，再按需要继续验证、实施或写作。
 
 | 学术版关注 | 企业版关注 |
@@ -36,7 +38,7 @@
 
 ![启动设置页：用途选择和权重设置在同一页](assets/startup-preview.png)
 
-启动页实拍，示例选择不代表已向任务提交。下载并解压后可打开 [启动页](examples/start.html)、[学术比较演示](examples/academic-comparison.html) 和 [企业比较演示](examples/business-comparison.html)。比较演示使用合成数据与假设评分；GitHub 文件页通常只显示 HTML 源码。
+下载并解压后可打开 [启动页](examples/start.html)、[学术比较演示](examples/academic-comparison.html) 和 [企业比较演示](examples/business-comparison.html)。比较演示使用合成数据。GitHub 文件页通常显示 HTML 源码，请解压后打开体验；离线预览不向当前任务提交设置。
 
 ## 开始使用
 
@@ -44,8 +46,6 @@
 
 > 使用 data-to-value，帮我从这些数据发现值得做的方向。先让我选择学术版或企业版并确认权重，再审核数据、比较候选，由我选择方案。
 
-适用于电脑端数据工作流。CSV、Excel、JSON、Parquet、Word、文本 PDF 等按 [支持清单](references/data-formats.md) 读取；扫描件需选配 OCR。完整功能需要宿主提供文件读取与 Python 执行能力。页面展示和回传取决于宿主，不支持时在对话中完成选择；离线页面无需付费托管。
+支持常用表格、结构化数据和文档。设置偏好、比较方向、选定方案，在同一套流程中完成。具体安装条件见 [安装说明](INSTALL.md)，文件类型见 [支持清单](references/data-formats.md)。
 
-技能提供研究与业务判断的工作流程，不承诺论文录用或实际收益。实验、部署和收益均以实际完成的证据为准。
-
-[MIT 许可](LICENSE) · [维护与检查](publishing/release-check.md)
+[MIT 许可](LICENSE)

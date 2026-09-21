@@ -115,6 +115,9 @@ textarea{width:100%;min-height:105px;font:inherit;border:1px solid #a7bdc9;borde
 noscript{display:block;padding:20px;background:#fff2d5}
 @media(max-width:640px){main{padding:20px 14px}.panel,.card{padding:16px}h1{font-size:24px}.weights{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media print{body{background:#fff}main{padding:0;max-width:none}.panel,.card{break-inside:avoid}.toolbar,.choice,.selection{display:none}.scroll{overflow:visible}.cards{display:block}.card{margin:12px 0}}
+
+:root{--ink:#163932;--muted:#60766f;--line:#dce6df;--blue:#166b62}body{background:radial-gradient(ellipse at 90% 0%,#e0eee4,transparent 50%),#f7f7f2}header{padding:16px 0 20px}h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.7px}.panel,.card{border-radius:20px;box-shadow:0 6px 24px #193d2b05}.panel{padding:26px}.card{padding:22px}.eyebrow{font-size:12px;letter-spacing:2px}button{border-radius:11px;font-weight:600}button.secondary{background:#edf3ed}button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #d3a44b;outline-offset:3px}.choice{background:#edf5ef}.choice:has(input:checked){outline:2px solid var(--blue)}.selection{background:#f1f7f0;border:1px solid #b9d3c5}.s4{background:#cee4d4}.s5{background:#add3bc}th{background:#f0f5ef}.weight input,textarea{border-color:var(--line)}.badge{border-radius:20px}input{accent-color:var(--blue)}
+@media(max-width:640px){.panel,.card{padding:18px}}
 </style>
 </head>
 <body><noscript>此交互报告需要JavaScript。请查看随报告提供的评分表及证据说明。</noscript>

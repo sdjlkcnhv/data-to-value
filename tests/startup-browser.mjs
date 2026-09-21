@@ -12,6 +12,7 @@ const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'data-to-value-browser-'
 const browser = spawn(process.argv[2], ['--headless=new', '--disable-gpu', '--no-first-run',
   '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'], {windowsHide:true, stdio:'ignore'});
 let ws;
+let collector;
 try {
   let port;
   for (let i=0; i<100; i++) {
@@ -59,9 +60,43 @@ try {
   await evaluate('document.getElementById("reset").click()');
   assert.equal(await evaluate('document.getElementById("confirm").disabled'),false);
   assert.match(await evaluate('document.getElementById("reply").value'), /学术版/);
+  await evaluate('document.querySelectorAll("#presets button")[1].click()');
+  assert.equal(await evaluate('document.querySelector("#weights input[type=number]").value'),'40');
   const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
   await fs.writeFile(path.join(profile,'startup.png'),Buffer.from(shot.data,'base64'));
+  await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'),true);
+  const mobile=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
+  await fs.writeFile(path.join(profile,'mobile.png'),Buffer.from(mobile.data,'base64'));
+  // Test the real local receiver through a browser, including its Origin validation.
+  const receipt=path.join(profile,'confirmed.json');
+  collector=spawn(process.env.PYTHON || 'python',[path.join(root,'scripts/configure_preferences.py'),
+    '--output',path.join(profile,'local.html'),'--result',receipt,'--timeout','45'],{windowsHide:true,stdio:['ignore','pipe','pipe']});
+  const localUrl=await new Promise((resolve,reject)=>{
+    let output='';const timer=setTimeout(()=>reject(new Error('Collector startup timed out')),10000);
+    collector.stdout.on('data',chunk=>{output+=chunk.toString();const match=output.match(/Preference page: (http:\/\/[^\s]+)/);if(match){clearTimeout(timer);resolve(match[1]);}});
+    collector.on('error',e=>{clearTimeout(timer);reject(e);});
+  });
+  await call('Page.navigate',{url:localUrl});
+  for(let i=0;i<50;i++){
+    if(await evaluate('Boolean(document.getElementById("connection")) && document.getElementById("connection").textContent.includes("可直接提交")')) break;
+    await new Promise(r=>setTimeout(r,100));
+  }
+  await evaluate('document.querySelectorAll("#mode-options button")[1].click(); document.querySelectorAll("#presets button")[1].click(); document.getElementById("confirm").click()');
+  let saved;
+  for(let i=0;i<50;i++){
+    try{saved=JSON.parse(await fs.readFile(receipt,'utf8'));break;}catch{}
+    await new Promise(r=>setTimeout(r,100));
+  }
+  assert.equal(saved.mode,'business');assert.equal(saved.confirmed,true);assert.equal(saved.weights.time,35);
+  assert.equal(saved.source,'local_interactive_confirmation');
+  for(let i=0;i<30;i++){
+    if(await evaluate('document.getElementById("status").textContent.includes("设置已保存")')) break;
+    await new Promise(r=>setTimeout(r,100));
+  }
+  assert.match(await evaluate('document.getElementById("status").textContent'), /设置已保存/);
+  assert.equal(await evaluate('document.getElementById("confirm").disabled'),true);
   assert.deepEqual(errors,[]);
-  console.log('PASS: unselected start, both modes, draft preservation, zero/all-zero, reset, reply and browser rendering.');
+  console.log('PASS: both modes, draft preservation, zero/all-zero, presets, desktop/mobile layout, real browser POST and saved receipt.');
   console.log('Screenshot: '+path.join(profile,'startup.png'));
-} finally {if(ws)ws.close();browser.kill();}
+} finally {if(ws)ws.close();browser.kill();if(collector)collector.kill();}

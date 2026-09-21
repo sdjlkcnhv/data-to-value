@@ -87,67 +87,37 @@ HTML = r"""<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>候选方案比较</title>
 <style>
-:root{color-scheme:light;--ink:#173042;--muted:#586d7b;--line:#d9e4e9;--blue:#236c90;--paper:#fff}
-*{box-sizing:border-box}body{margin:0;background:#f1f5f7;color:var(--ink);font:15px/1.65 system-ui,"Microsoft YaHei",sans-serif}
-[hidden]{display:none!important}
-main{max-width:1240px;margin:auto;padding:36px 28px 52px}h1{font-size:30px;line-height:1.3;margin:10px 0 14px}h2{font-size:20px;margin:0 0 16px}h3{font-size:18px;margin:12px 0}
-p{margin:8px 0}.muted{color:var(--muted)}.eyebrow{font-weight:700;color:var(--blue)}.panel,.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:20px}
-.weights{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:14px}
-.weight{display:grid;gap:6px}.weight input{width:100%;padding:9px 11px;border:1px solid #a7bdc9;border-radius:7px;font:inherit}
-.weight output{color:var(--blue);font-size:13px}.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px}
-button{background:var(--blue);color:white;border:0;border-radius:7px;padding:10px 15px;cursor:pointer;font:inherit}
-button:disabled{opacity:.45;cursor:default}button.secondary{background:#e7f0f5;color:var(--ink)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}.card{margin:0;min-width:0}
-.badges{display:flex;gap:7px;flex-wrap:wrap}.badge{display:inline-block;border-radius:5px;padding:3px 8px;background:#edf3f6;font-size:12px}
-.conditional{background:#fff2d5;color:#73530d}.blocked{background:#fbe7e5;color:#92382f}.ready{background:#e4f3ed;color:#246246}
-.track{height:12px;background:#edf1f4;border-radius:8px;margin:10px 0 4px;overflow:hidden}.fill{height:100%;background:var(--blue);width:0}
-.axis{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}.total{font-size:25px;font-weight:700}
-.fact{margin:12px 0;overflow-wrap:anywhere}.fact strong{display:block;font-size:13px;color:var(--muted)}
-.choice{display:flex;align-items:center;gap:8px;padding:10px;background:#f1f6f8;border-radius:8px;margin-top:16px}
-.choice input{width:18px;height:18px;flex-shrink:0}.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:550px}
-th,td{border-bottom:1px solid var(--line);text-align:left;padding:12px;vertical-align:top;overflow-wrap:anywhere}th{background:#f4f8fa}
-.rating{display:inline-block;min-width:50px;text-align:center;padding:4px 9px;border-radius:6px;font-weight:700}
-.s1{background:#f4e9de}.s2{background:#eeeade}.s3{background:#e2edf0}.s4{background:#cce5ee}.s5{background:#aed6e5}.unknown{background:#f0f0f0;color:#59626a}
-.basis{font-size:12px;color:var(--muted);margin-top:4px}details{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}summary{cursor:pointer;font-weight:600}
-.evidence-item{margin-top:12px;border-left:3px solid #c9dce6;padding-left:12px;overflow-wrap:anywhere}
-textarea{width:100%;min-height:105px;font:inherit;border:1px solid #a7bdc9;border-radius:8px;padding:12px;margin-top:12px;resize:vertical}
-.warning{color:#894d10}.status{padding:8px 0}.selection{border:2px solid #bed8e5}
-noscript{display:block;padding:20px;background:#fff2d5}
-@media(max-width:640px){main{padding:20px 14px}.panel,.card{padding:16px}h1{font-size:24px}.weights{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media print{body{background:#fff}main{padding:0;max-width:none}.panel,.card{break-inside:avoid}.toolbar,.choice,.selection{display:none}.scroll{overflow:visible}.cards{display:block}.card{margin:12px 0}}
-
-:root{--ink:#163932;--muted:#60766f;--line:#dce6df;--blue:#166b62}body{background:radial-gradient(ellipse at 90% 0%,#e0eee4,transparent 50%),#f7f7f2}header{padding:16px 0 20px}h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.7px}.panel,.card{border-radius:20px;box-shadow:0 6px 24px #193d2b05}.panel{padding:26px}.card{padding:22px}.eyebrow{font-size:12px;letter-spacing:2px}button{border-radius:11px;font-weight:600}button.secondary{background:#edf3ed}button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #d3a44b;outline-offset:3px}.choice{background:#edf5ef}.choice:has(input:checked){outline:2px solid var(--blue)}.selection{background:#f1f7f0;border:1px solid #b9d3c5}.s4{background:#cee4d4}.s5{background:#add3bc}th{background:#f0f5ef}.weight input,textarea{border-color:var(--line)}.badge{border-radius:20px}input{accent-color:var(--blue)}
-@media(max-width:640px){.panel,.card{padding:18px}}
-
-body{background:#f4f3ef}main{max-width:1320px;padding:30px 42px 60px}.report-brand{border-bottom:1px solid var(--line);padding:0 0 22px;font-size:12px;font-weight:650;letter-spacing:2px}.report-brand span{float:right;font-size:10px;font-weight:400;letter-spacing:1px;color:var(--muted)}header{padding:40px 0 24px}header h1{font-size:clamp(30px,4vw,48px);line-height:1.3}.panel,.card{box-shadow:none;border-radius:16px}.cards .card{background:#fbfcf9}.cards .card:has(input:checked){outline:2px solid #166b62;background:#eef6ef}.total{font-size:34px;font-variant-numeric:tabular-nums}.badge{font-size:10px}.selection{background:#143e36;color:#f1f6ef}.selection p,.selection .muted{color:#c0d3c8}.selection textarea{background:#f7faf5;color:#173b31}.selection button{background:#d9e9d4;color:#173b31}.selection button.secondary{background:#ffffff17;color:#fff}.weight input{background:#f7faf5}.evidence-item{border-color:#a6c3b0}td,th{font-size:13px}button{padding:12px 18px}
-@media(max-width:640px){main{padding:24px 16px}.report-brand span{display:none}header{padding-top:28px}}
+:root{color-scheme:light;--ink:#17243a;--muted:#617087;--line:#e0e6ef;--blue:#3459db;--paper:#fff}*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:var(--ink);font:14px/1.7 system-ui,"Microsoft YaHei",sans-serif}[hidden]{display:none!important}main{max-width:1304px;padding:28px 32px 60px;margin:auto}.report-brand{border-bottom:1px solid var(--line);padding-bottom:22px;font-size:17px;font-weight:750}.report-brand span{float:right;font-size:12px;color:var(--muted);font-weight:400}header{padding:28px 0 8px}.eyebrow{font-size:12px;color:var(--blue)}h1{font-size:30px;line-height:1.4;letter-spacing:-.5px;margin:10px 0}h2{font-size:18px;margin:0 0 14px}h3{font-size:17px;margin:16px 0 12px}p{margin:8px 0}.muted{color:var(--muted)}.panel{padding:24px;border:1px solid var(--line);background:white;border-radius:16px;margin-top:20px}.weights{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}.weight{display:grid;gap:6px;font-size:12px}.weight input{width:100%;padding:9px;border:1px solid #cdd6e6;border-radius:8px;background:#fff;font:inherit}.weight output{color:var(--blue);font-size:11px}.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px}.toolbar .muted{font-size:12px}button{background:var(--blue);color:white;border:1px solid #2d4fc6;border-radius:9px;padding:11px 18px;font:600 13px/1.5 system-ui,"Microsoft YaHei",sans-serif;cursor:pointer;box-shadow:0 3px 0 #2642aa;transition:background .15s}button:hover:not(:disabled){background:#294dcc}button:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #2642aa}button:disabled{background:#e5e9f1;color:#8b96a9;border-color:#e5e9f1;cursor:not-allowed;box-shadow:none}button.secondary{background:white;color:var(--muted);border:1px solid #cdd6e6;box-shadow:none}button.secondary:hover{background:#f3f6fc}button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #91a5ff;outline-offset:3px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}.card{border:2px solid var(--line);border-radius:13px;padding:20px;min-width:0;display:flex;flex-direction:column;background:#fff}.card:has(input:checked){border-color:var(--blue);background:#f5f7ff}.badges{display:flex;gap:7px;flex-wrap:wrap}.badge{border-radius:6px;padding:3px 8px;font-size:10px;background:#f0f3f8;color:#54637a}.conditional{background:#fff5dc;color:#855d16}.blocked{background:#fff0f0;color:#a02e3c}.ready{background:#eaf6ee;color:#196742}.card>p{font-size:13px;color:#586982}.total{font-size:23px;font-weight:700;margin:10px 0;color:var(--ink)}.track{height:7px;border-radius:5px;background:#e6ebf5;overflow:hidden;margin:8px 0}.fill{height:100%;background:var(--blue)}.axis{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}.fact{margin:11px 0;font-size:12px;overflow-wrap:anywhere}.fact strong{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-bottom:4px}.choice{display:flex;align-items:center;gap:9px;padding:12px;background:#f3f6fc;border:1px solid #d5deef;border-radius:8px;margin-top:auto;cursor:pointer;font-size:12px}.choice:has(input:checked){background:var(--soft,#eaf0ff);color:var(--blue);border-color:#b5c3fb;font-weight:650}.choice:has(input:disabled){cursor:not-allowed;color:#8b96a9}.choice input{width:18px;height:18px;accent-color:var(--blue);flex-shrink:0}.card details{margin-bottom:18px}details{border-top:1px solid var(--line);padding-top:12px;margin-top:14px}summary{cursor:pointer;font-size:12px;font-weight:600}.evidence-item{border-left:2px solid #b7c6f0;padding-left:12px;margin-top:12px;font-size:12px;overflow-wrap:anywhere}.basis{font-size:11px;color:var(--muted);margin-top:4px}.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:550px}th,td{padding:15px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:12px;overflow-wrap:anywhere}th{background:#f5f7fc;font-weight:600}.rating{display:inline-block;border-radius:5px;padding:3px 8px;font-size:12px;font-weight:650}.s1{background:#fbebeb}.s2{background:#fcf2df}.s3{background:#eef0f7}.s4{background:#e3eafb}.s5{background:#cad7fa}.unknown{background:#f0f2f5;color:#6a7689}.selection{border-top:3px solid var(--blue)}.selection p{font-size:13px}.selection textarea{width:100%;min-height:100px;border:1px solid #cdd6e6;border-radius:9px;padding:13px;margin-top:12px;font:12px/1.8 system-ui,"Microsoft YaHei",sans-serif;background:#f8faff;color:var(--ink);resize:vertical}.status{padding:10px 14px;background:#f6f8fc;border-radius:8px;font-size:12px;margin-top:16px}.warning{color:#8b5b13}noscript{display:block;padding:20px;background:#fff3d6}
+@media(max-width:900px){.weights{grid-template-columns:repeat(3,1fr)}.report-brand span{display:none}main{padding:24px}.cards{grid-template-columns:1fr}.choice{margin-top:12px}}
+@media print{body{background:white}main{padding:0}.toolbar,.choice,.selection{display:none}.panel,.card{break-inside:avoid}.cards{display:block}.card{margin:10px 0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body><noscript>此交互报告需要JavaScript。请查看随报告提供的评分表及证据说明。</noscript>
 <main>
-<div class="report-brand">◈ &nbsp; DATA-TO-VALUE <span>DECISION STUDIO / 方案比较</span></div>
+<div class="report-brand">↗ &nbsp; data-to-value <span>方案比较 · 最终由你选择</span></div>
 <header><div id="mode" class="eyebrow"></div><h1 id="title"></h1>
 <p id="intro" class="muted">评分帮助理解取舍，最终方案由你选择。综合分不是成功概率。</p></header>
 <section class="panel"><h2>调整比较偏好</h2><p id="weight-basis" class="muted"></p>
 <div id="weights" class="weights"></div>
 <div class="toolbar"><button id="reset" class="secondary" type="button">恢复初始权重</button>
-<span class="muted">输入权重份额，系统统一归一化；分项评分和证据保持不变。</span></div>
+<span class="muted">输入相对权重，系统自动换算占比；调整权重不会改变分项评分和证据。</span></div>
 <div id="ranking" class="status" role="status" aria-live="polite"></div></section>
 <section class="panel"><h2>方案比较</h2><div id="cards" class="cards"></div></section>
 <section class="panel"><h2>评分矩阵</h2><p id="matrix-note" class="muted">各维度均为1–5分，越高越有利。未知单独显示。</p>
 <div class="scroll"><table id="matrix"></table></div></section>
 <section id="advice-panel" class="panel" hidden><h2>建议与取舍</h2><p id="advice"></p></section>
-<section class="panel selection"><h2>由你决定下一步</h2>
+<section class="panel selection"><h2>核对并发送你的选择</h2>
 <p>可以选择一个方案，也可以先补证据、调整比较条件或暂不选择。选择后复制下方文字并发送到对话，才会继续推进。</p>
 <p id="selection-status" class="muted" role="status">尚未选择方案。</p>
 <textarea id="selection-text" aria-label="待发送的方案选择" readonly placeholder="选择方案后，这里会生成回复文字。"></textarea>
-<div class="toolbar"><button id="copy" type="button" disabled>复制选择</button><button id="clear" type="button" class="secondary">清除选择</button><span id="copy-status" class="muted" role="status"></span></div>
+<div class="toolbar"><button id="copy" type="button" disabled>复制选择，回到对话</button><button id="clear" type="button" class="secondary">清除选择</button><span id="copy-status" class="muted" role="status"></span></div>
 </section>
 </main>
 <script>
 "use strict";
 const report = __REPORT_DATA__;
-const eligibilityLabels = {ready:"可比较", conditional:"条件性参考", blocked:"暂不参与"};
+const eligibilityLabels = {ready:"可比较", conditional:"仍有条件待确认", blocked:"需先解决关键问题"};
 const byId = (id) => document.getElementById(id);
 function element(tag, text, className) {
   const node = document.createElement(tag);
@@ -171,10 +141,12 @@ const weights = Object.fromEntries(report.dimensions.map(d => [d.id,d.weight]));
 const inputs = new Map(), weightLabels = new Map(), totalLabels = new Map(), fills = new Map();
 let selectedCandidate = null;
 function updateSelection() {
+  document.querySelectorAll("[data-choice-id]").forEach(e=>{const c=report.candidates.find(c=>c.id===e.dataset.choiceId);e.textContent=c.eligibility==="blocked"?"暂不能选择：需先解决关键问题":selectedCandidate?.id===c.id?"✓ 已选中，尚未发送":"选择这个方案";});
+  byId("copy").textContent="复制选择，回到对话";byId("copy-status").textContent="";
   if (!selectedCandidate) return;
   const sum = Object.values(weights).reduce((a,b) => a+b,0);
   const valid = Number.isFinite(sum) && sum > 0 && Object.values(weights).every(v => Number.isFinite(v) && v >= 0);
-  byId("selection-status").textContent = "待发送的选择："+selectedCandidate.id+" · "+selectedCandidate.name;
+  byId("selection-status").textContent = "已选中："+selectedCandidate.name+"。尚未发送到对话。";
   const preference = valid ? report.dimensions.map(d => d.label+" "+(100*weights[d.id]/sum).toFixed(1)+"%").join("、") : "权重待修正";
   byId("selection-text").value = "我选择方案 "+selectedCandidate.id+"（"+selectedCandidate.name+"）。本次比较偏好："+preference+"。请在当前授权范围内推进下一步："+selectedCandidate.next_step;
   byId("copy").disabled = !valid;
@@ -194,7 +166,7 @@ for (const dimension of report.dimensions) {
   input.value = dimension.weight; input.setAttribute("aria-label", dimension.label + "权重");
   const share = element("output"); label.append(input, share); byId("weights").append(label);
   inputs.set(dimension.id, input); weightLabels.set(dimension.id, share);
-  input.addEventListener("input", () => { weights[dimension.id] = Number(input.value); refresh(); });
+  input.addEventListener("input", () => { weights[dimension.id] = input.value === "" ? NaN : Number(input.value); refresh(); });
 }
 function fact(parent, label, value) {
   const block = element("div",undefined,"fact");
@@ -204,7 +176,7 @@ for (const candidate of report.candidates) {
   const card = element("article",undefined,"card");
   const badges = element("div",undefined,"badges");
   badges.append(element("span",candidate.maturity,"badge"),element("span",eligibilityLabels[candidate.eligibility],"badge "+candidate.eligibility));
-  card.append(badges,element("h3",candidate.id+" · "+candidate.name),element("p",candidate.summary));
+  card.append(badges,element("h3",candidate.name),element("p",candidate.summary));
   const total = element("div",undefined,"total"); totalLabels.set(candidate.id,total); card.append(total);
   const track = element("div",undefined,"track"); const fill = element("div",undefined,"fill");
   fills.set(candidate.id,fill); track.append(fill); card.append(track);
@@ -223,7 +195,7 @@ for (const candidate of report.candidates) {
   const choice = element("label",undefined,"choice"), radio = element("input");
   radio.type = "radio"; radio.name = "candidate"; radio.value = candidate.id;
   radio.disabled = candidate.eligibility === "blocked"; radio.setAttribute("aria-label","选择方案 "+candidate.id);
-  choice.append(radio,element("span",radio.disabled ? "先解决阻断项" : "选择方案 "+candidate.id));
+  const choiceText=element("span",radio.disabled ? "暂不能选择：需先解决关键问题" : "选择这个方案"); choiceText.dataset.choiceId=candidate.id; choice.append(radio,choiceText);
   radio.addEventListener("change",() => {
     selectedCandidate = candidate;
     updateSelection();
@@ -279,10 +251,10 @@ byId("clear").addEventListener("click",() => {
   selectedCandidate = null;
   document.querySelectorAll('input[name="candidate"]').forEach(r => {r.checked = false;});
   byId("selection-text").value = ""; byId("selection-status").textContent = "尚未选择方案。";
-  byId("copy").disabled = true; byId("copy-status").textContent = "";
+  byId("copy").disabled = true; byId("copy-status").textContent = ""; updateSelection();
 });
 byId("copy").addEventListener("click",async () => {
-  try { await navigator.clipboard.writeText(byId("selection-text").value); byId("copy-status").textContent = "已复制，请发送到对话。"; }
+  try { await navigator.clipboard.writeText(byId("selection-text").value); byId("copy").textContent = "✓ 已复制 · 请到对话发送"; byId("copy-status").textContent = "复制成功，尚未提交。请在对话中粘贴并发送。"; }
   catch (_) { byId("selection-text").focus(); byId("selection-text").select(); byId("copy-status").textContent = "请手动复制选中的文字并发送到对话。"; }
 });
 if (report.recommendation) { byId("advice-panel").hidden = false; byId("advice").textContent = report.recommendation; }

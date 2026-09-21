@@ -64,11 +64,30 @@ try {
   assert.equal(await evaluate('document.querySelector("#weights input[type=number]").value'),'40');
   const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
   await fs.writeFile(path.join(profile,'startup.png'),Buffer.from(shot.data,'base64'));
+  await evaluate('Object.defineProperty(navigator,"clipboard",{configurable:true,value:{writeText:async()=>{}}}); document.getElementById("confirm").click()');
+  await evaluate('new Promise(r=>setTimeout(r,50))');
+  assert.match(await evaluate('document.getElementById("status").textContent'), /复制成功，但尚未提交/);
+  assert.match(await evaluate('document.getElementById("confirm").textContent'), /已复制/);
+  await evaluate('document.getElementById("reset").click()');
+  assert.doesNotMatch(await evaluate('document.getElementById("confirm").textContent'), /已复制/);
+  await evaluate('Object.defineProperty(navigator,"clipboard",{configurable:true,value:{writeText:async()=>{throw new Error("denied")}}}); document.getElementById("confirm").click()');
+  await evaluate('new Promise(r=>setTimeout(r,50))');
+  assert.equal(await evaluate('document.getElementById("reply-details").open'),true);
+  assert.match(await evaluate('document.getElementById("status").textContent'), /未允许自动复制/);
+  assert.equal(await evaluate('document.getElementById("confirm").disabled'),false);
   for(const [name,relative] of [['listing','publishing/preview.html'],['comparison','examples/business-comparison.html']]) {
     await call('Page.navigate',{url:pathToFileURL(path.join(root,relative)).href});
     for(let i=0;i<40;i++){if(await evaluate('document.readyState === "complete" && document.querySelector("h1") !== null'))break;await new Promise(r=>setTimeout(r,100));}
     assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'),true);
-    const image=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
+    if(name==='comparison'){
+      await evaluate('document.querySelector("input[name=candidate]:not(:disabled)").click()');
+      assert.match(await evaluate('document.getElementById("selection-status").textContent'),/尚未发送/);
+      assert.match(await evaluate('document.querySelector("[data-choice-id]").textContent'),/已选中/);
+      await evaluate('document.getElementById("clear").click()');
+      assert.equal(await evaluate('document.getElementById("copy").disabled'),true);
+      assert.equal(await evaluate('document.querySelector("[data-choice-id]").textContent'),'选择这个方案');
+    }
+    const image=await call('Page.captureScreenshot' ,{format:'png',captureBeyondViewport:true});
     await fs.writeFile(path.join(profile,name+'.png'),Buffer.from(image.data,'base64'));
   }
   // Test the real local receiver through a browser, including its Origin validation.
@@ -85,6 +104,11 @@ try {
     if(await evaluate('Boolean(document.getElementById("connection")) && document.getElementById("connection").textContent.includes("可直接提交")')) break;
     await new Promise(r=>setTimeout(r,100));
   }
+  await evaluate('window.originalFetch=window.fetch; window.fetch=async()=>{throw new Error("connection test")}; document.querySelectorAll("#mode-options button")[1].click(); document.getElementById("confirm").click()');
+  await evaluate('new Promise(r=>setTimeout(r,50))');
+  assert.equal(await evaluate('document.getElementById("status").dataset.tone'),'error');
+  assert.equal(await evaluate('document.getElementById("confirm").disabled'),false);
+  await evaluate('window.fetch=window.originalFetch');
   await evaluate('document.querySelectorAll("#mode-options button")[1].click(); document.querySelectorAll("#presets button")[1].click(); document.getElementById("confirm").click()');
   let saved;
   for(let i=0;i<50;i++){

@@ -1,6 +1,6 @@
 # 安装与首次验收
 
-将完整 `data-to-value` 文件夹或ZIP导入支持技能的宿主，保留 `references` 和 `scripts`。不能只上传 `SKILL.md`。
+将完整 `data-to-value` 文件夹或ZIP导入支持技能的宿主，保留 `references`、`scripts` 和 `assets`（启动页模板位于其中）。不能只上传 `SKILL.md`。
 
 ## 首次导入后
 

@@ -1,0 +1,8 @@
+-r requirements-tabular.txt
+packaging>=24,<27
+python-calamine>=0.3.1,<1
+pyarrow>=18,<25
+pypdf>=5,<7
+python-docx>=1.1.2,<2
+beautifulsoup4>=4.12,<5
+defusedxml>=0.7.1,<1

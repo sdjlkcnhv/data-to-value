@@ -69,69 +69,46 @@
 
 常见技能根：`~/.dsh/skills`、`~/.claude/skills`、`~/.agents/skills`、项目内的 `.agents/skills`。
 
-也可以直接从本仓库安装（需要 SkillHub 或兼容的 ClawHub CLI）：
+仓库当前为私有。下载Release附件或克隆均需已获授权的GitHub账号；不要把访问令牌粘贴到聊天。上传ZIP到技能导入入口，或使用已认证的Git克隆后放入宿主要求的技能目录。本项目尚未声明在SkillHub/ClawHub注册，不提供占位安装命令。
 
-```bash
-npx clawhub --dir ~/.dsh/skills install <命名空间>--data-to-value
-```
-
-### 依赖
-
-| 能力 | 依赖 |
-|---|---|
-| 版本选择、偏好确认、评分解释 | 无需表格库 |
-| 生成偏好页与评分页 | Python 3.10+ 标准库，无需 pandas / openpyxl / npm |
-| CSV / TSV / JSON 基础审核 | Python 标准库即可 |
-| 常用 Excel 读取与表格分析 | `requirements-tabular.txt`（pandas、openpyxl） |
-
-初始化（一次性，仅缺依赖时安装到专用环境）：
-
-```bash
-python scripts/setup_environment.py --profile tabular          # 只检查
-python scripts/setup_environment.py --profile tabular --install # 缺依赖时安装
-```
-
-命令中的相对路径以技能目录为基准；工作目录不是技能目录时改用绝对路径。默认状态目录位于用户目录 `.cache/data-to-value`，**该目录不可写时必须用 `--state-dir` 指向可写目录**，否则初始化会以权限错误退出。
-
-## 网页展示说明
-
-偏好页与评分页是自包含的离线 HTML，不需要联网或额外依赖。要让使用者真正看到页面，**HTML 须生成在会话工作区内，并用平台的文件交付工具声明为交付物**；生成到工作区外只保证文件存在，不保证用户能看到入口。
-
-在网页宿主或沙箱 iframe 预览中，页面没有同源权限：脚本可以运行（滑块、评分矩阵、图表都可用），但剪贴板接口不保证可用，页面也访问不到本机回环地址。因此这类环境应以**对话或原生输入工具**收取偏好与方案选择，页面仅用于查看和调权；页面上的"复制"失败时会退化为选中只读文本供手动复制。
-
-## 已验证 / 未验证
-
-已在 Python 3.10.11 + pandas 2.3.3 + openpyxl 3.1.5 上验证：
-
-- 环境探测（core / tabular）、两版偏好页生成、评分报告生成均正常退出
-- 本机回环偏好确认全流程（含错误路径拒绝、跨源拒绝、确认后落盘、回执传入比较页）
-- 输入校验：分数越界、`null` 与"未知"错配、重复 id、维度不一致、负数权重等均被拒绝
-- 报告输出对 `<` 做转义，无脚本注入
-
-**未验证：浏览器内实际渲染。** 滑块拖动、字体、剪贴板兜底等显示细节尚未在目标宿主实测，请按 `references/runtime.md` 的"页面能力按宿主分别验证"表自行确认一次。
-
-## 目录结构
+### 一次安装，后续复用
 
 ```text
-data-to-value/
-├── SKILL.md                      # 主入口：流程、协作约定、按需材料索引
-├── INSTALL.md                    # 安装与首次验收
-├── requirements-tabular.txt      # 可选表格依赖
-├── LICENSE
-├── agents/openai.yaml            # 部分平台的入口元数据
-├── references/                   # 按需加载的细则
-│   ├── runtime.md                # 安装、依赖范围、按宿主验证
-│   ├── data-audit.md             # 数据核验
-│   ├── problem-validation.md     # 候选生成、成熟度、最小验证、工程交付
-│   ├── candidate-scoring.md      # 偏好设置、评分、可视化、用户选择
-│   ├── academic-writing.md       # 学术选题、查新、实验、写作、审稿
-│   ├── business-value.md         # 企业机会发现、价值合同、试点、交接
-│   └── decision-lessons.md       # 判断案例（仅解释判断，不作项目参数）
-└── scripts/
-    ├── setup_environment.py      # 环境检查与隔离安装
-    ├── configure_preferences.py  # 偏好设置页与本地确认
-    └── render_candidate_scores.py# 评分比较页
+python scripts/setup_environment.py --profile common --install
 ```
+
+默认准备常用数据配置并逐项验证依赖和合成文件读取。命令由安装助手执行；不在每次上传数据时重复安装。现有环境通过检查就复用，缺少依赖才安装到专用虚拟环境。详细步骤见 [INSTALL.md](INSTALL.md)。导入ZIP是否自动触发初始化由宿主决定；本项目没有假定所有平台都提供安装钩子。
+
+| 配置 | 用途 |
+|---|---|
+| core | 标准库、交互页面、CSV/JSON/文本/SQLite/ZIP清单 |
+| tabular | core加pandas、NumPy、openpyxl |
+| common（默认） | 常用Excel、列式数据、文档和结构化文本读取 |
+| ocr（选配） | common加图片/扫描PDF识别；需额外准备Tesseract和目标语言数据 |
+
+支持格式与边界见 [数据读取清单](references/data-formats.md)，按平台和格式记录的实测程度见 [兼容性矩阵](references/compatibility.md)。不宣称所有平台、任意数据或所有文件变体均可直接运行。
+
+### 统一读取
+
+```text
+<已验收的Python> scripts/read_data.py --input <文件> --output <工作区>/读取结果.json
+```
+
+解释器取自 `runtime-common.json` 等配置回执。读取器不安装依赖、不修改源数据；记录抽样、表/页位置、失败原因。解析成功仍需对照数据说明审核，不能当作真实数据认证。
+
+## 网页展示
+
+两版交互页面使用Python标准库生成离线HTML。优先使用宿主交付/预览工具；本地桌面可请求浏览器打开。沙箱iframe可能限制JavaScript、剪贴板或回传，须实测；不支持时通过原生输入或对话确认，不把生成文件等同于页面已展示。
+
+## 检查与测试
+
+```text
+python -m unittest discover -s tests -v
+```
+
+使用common配置解释器。测试覆盖格式读取、原文件不变、中文路径/控制台、依赖约束、部分读取与错误状态。提供Windows、Linux、macOS与Python 3.10/3.14的GitHub Actions矩阵模板（tests/compatibility-workflow.yml）；当前未启用，不能视为云端测试通过；不替代豆包等客户端账号内验收。
+
+主要文件：`SKILL.md`为入口，`references/`包含按需细则；`scripts/setup_environment.py`负责安装验收，`read_data.py`负责统一读取，`configure_preferences.py`和`render_candidate_scores.py`负责交互页。`requirements-*.txt`声明不同配置的依赖，`tests/`提供回归测试。
 
 ## 许可
 

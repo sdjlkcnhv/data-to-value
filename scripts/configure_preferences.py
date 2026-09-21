@@ -10,6 +10,7 @@ from pathlib import Path
 import secrets
 import time
 import webbrowser
+from console_utils import configure_console
 
 
 PROFILES = {
@@ -260,6 +261,7 @@ def collect(mode, result_path, timeout, open_browser):
 
 
 def main():
+    configure_console()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=PROFILES, required=True)
     parser.add_argument("--output", type=Path, required=True)

@@ -1,0 +1,4 @@
+-r requirements-common.txt
+Pillow>=10.4,<13
+pytesseract>=0.3.13,<1
+pypdfium2>=4.30,<6

@@ -5,6 +5,7 @@ import argparse
 import json
 import math
 import webbrowser
+from console_utils import configure_console
 from pathlib import Path
 
 
@@ -289,6 +290,7 @@ def render(data):
 
 
 def main():
+    configure_console()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)

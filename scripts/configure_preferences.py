@@ -80,10 +80,17 @@ button{border-radius:12px;font-weight:600;transition:background .15s,box-shadow 
 .section-title{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-top:28px}.section-title span{color:var(--muted);font-size:13px}.presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.presets button{font-size:13px;padding:8px 14px}.confirm-panel{border:1px solid #b9d3c5;background:#f1f7f0}.connection{display:inline-flex;padding:5px 12px;border-radius:30px;background:#e6eee5;font-size:12px;color:#446353;margin-bottom:10px}.allocation{height:8px;display:flex;overflow:hidden;border-radius:8px;background:#e5ece4;margin:18px 0 10px}.allocation span{transition:width .15s}.summary{font-size:13px;color:var(--muted)}[hidden]{display:none!important}textarea{background:#fff;border-color:var(--line)}.brand{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:28px;font-size:12px;letter-spacing:1px}.brand strong{letter-spacing:2px}.step{color:var(--muted)}
 @media(max-width:640px){main{padding:24px 16px 40px}.panel{padding:20px}#mode-options{grid-template-columns:1fr;gap:10px}#mode-options button{padding:18px}.card{display:block;padding:18px}.controls{margin-top:16px}.section-title{align-items:start;flex-direction:column;gap:3px}.brand{font-size:10px;align-items:flex-start;gap:12px}.brand strong{white-space:nowrap}.brand .step{text-align:right;max-width:160px}.toolbar button{flex-grow:1}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Editorial workspace: a quiet canvas, a clear decision rail. */
+body{background:#f4f3ef}main{max-width:1320px;padding:30px 42px 64px}.brand{margin-bottom:0;padding-bottom:22px}.brand strong:before{content:'◈';font-size:20px;margin-right:10px;color:#166b62}.brand .step{font-size:11px;letter-spacing:0}
+header{position:relative;padding:44px 0 36px;max-width:850px}header h1{font-size:clamp(36px,4.5vw,60px);font-weight:650;line-height:1.2;letter-spacing:-2px;margin:18px 0 20px}header h1 em{font-style:normal;color:#166b62}header p{font-size:16px;line-height:1.9}header p.muted{font-size:12px}.workspace{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;align-items:start}.editor{min-width:0}.editor>.panel:first-child{margin-top:0}.decision-rail{position:sticky;top:24px}.decision-rail .panel:first-child{margin-top:0}.outcome-panel{background:#143e36;color:#f1f6ef;border:0;overflow:hidden;position:relative}.outcome-panel .eyebrow{color:#b5ceb3;font-size:10px;letter-spacing:2px}.outcome-panel h2{font-size:24px;margin:18px 0 12px;line-height:1.4}.outcome-panel>p{font-size:13px;color:#c0d3c8;line-height:1.8}.deliverables{list-style:none;padding:0;margin:28px 0}.deliverables li{display:flex;gap:13px;margin:22px 0}.deliverables li>span{font:12px/24px monospace;color:#c8b38a}.deliverables strong{display:block;font-size:14px;font-weight:550}.deliverables small{display:block;font-size:11px;color:#b5c9bf;margin-top:5px}.rail-note{border-top:1px solid #ffffff24;padding-top:18px;font-size:11px!important}.confirm-panel{background:#fff;border:1px solid var(--line)}.confirm-panel h2{font-size:18px}.confirm-panel #delivery-note{font-size:12px;line-height:1.9}.confirm-panel .toolbar{display:grid;grid-template-columns:1fr;gap:8px}.confirm-panel button{width:100%}.confirm-panel .status{font-size:12px}.confirm-panel details{font-size:12px}.connection{font-size:10px}.panel,.card{box-shadow:none;border-radius:16px}.editor>.panel>p{font-size:13px;color:var(--muted)}#mode-options button{font-size:19px;padding:22px 18px;border-radius:12px}.mode-detail{font-size:12px;line-height:1.9}#mode-options button[aria-pressed=true]:after{right:14px;top:19px}.card{padding:18px 20px;column-gap:24px;grid-template-columns:1fr .9fr}.card h2{font-size:15px}.description{font-size:12px}.share{font-size:17px}.controls input[type=number]{font-size:13px;width:58px;padding:8px 4px}.grid{gap:8px}.section-title h2{font-size:18px}.section-title span{font-size:11px}.presets button[aria-pressed=true]{background:#163e35;color:#fff}.presets button{border:1px solid #dce6df;font-size:12px;border-radius:30px}.allocation{height:5px}.summary{font-size:11px;line-height:1.9}textarea{font-size:13px}.toolbar button{font-size:13px}
+@media(max-width:980px){main{padding:24px}.workspace{grid-template-columns:minmax(0,1fr) 290px;gap:18px}.panel{padding:20px}.card{display:block}.controls{margin-top:14px}#mode-options{grid-template-columns:1fr}}
+@media(max-width:720px){main{padding:20px 16px 36px}.workspace{grid-template-columns:1fr}.decision-rail{position:static}.brand .step{display:none}header{padding:30px 0 24px}header h1{font-size:40px;letter-spacing:-1px}header p{font-size:14px}.outcome-panel{margin-top:4px!important}#mode-options{grid-template-columns:1fr 1fr;gap:10px}#mode-options button{padding:18px 12px;font-size:17px}.mode-detail{padding-right:0;font-size:11px}#mode-options button[aria-pressed=true]:after{right:9px;top:8px;font-size:12px}.section-title{gap:6px}.confirm-panel .toolbar{grid-template-columns:1fr 1fr}.confirm-panel #confirm{grid-column:1/-1}}
 </style></head><body><noscript>请在对话中说明各项权重，或明确表示使用初始权重。</noscript><main>
-<div class="brand"><strong>DATA-TO-VALUE</strong><span class="step">01 设置偏好　 /　 02 审核数据　 /　 03 发现想法</span></div><header><div id="mode" class="eyebrow"></div><h1>从你的目标开始。</h1>
-<p>选择方向，告诉我们什么更重要。审核数据之后，再一起找到值得验证的想法。</p>
+<div class="brand"><strong>DATA-TO-VALUE</strong><span class="step">01 设置偏好　 /　 02 审核数据　 /　 03 发现想法</span></div><header><div id="mode" class="eyebrow"></div><h1>让已有数据，<br><em>长出下一步。</em></h1>
+<p>从一个值得研究的问题，到一个值得投入的机会。<br>你定义优先级，我们从数据里寻找依据。</p>
 <p class="muted">一次确认版本与权重；看到候选方案后，你仍然可以调整。</p></header>
+<div class="workspace"><div class="editor">
 <section class="panel"><h2>第一步 · 版本与权重</h2><p>两项同等展示，不替你选择。切换版本会显示对应指标，并保留各自尚未提交的权重。</p><div id="mode-options" class="toolbar" role="group" aria-label="选择学术版或企业版"></div></section>
 <div id="weight-section" hidden><div class="section-title"><h2>什么对你更重要？</h2><span>拖动或输入份额，自动换算占比</span></div><div id="presets" class="presets"></div><div id="allocation" class="allocation" aria-hidden="true"></div><p id="weight-summary" class="summary"></p></div>
 <section id="weights" class="grid" aria-label="指标权重"></section>
@@ -91,11 +98,11 @@ button{border-radius:12px;font-weight:600;transition:background .15s,box-shadow 
 <p class="muted">例如最多投入两周，或只能使用现有数据。这些限制会单独记录，不由综合分抵消。</p>
 <textarea id="constraints" maxlength="4000" placeholder="没有明确限制可以留空。"></textarea>
 <p class="muted">权重表达你的偏好。数据审核、事实依据和必要的验证不会因权重较低而被跳过。</p></section>
-<section class="panel confirm-panel"><div id="connection" class="connection"></div><h2>准备好，就从这里开始</h2><p id="delivery-note" class="muted"></p>
+</div><aside class="decision-rail"><section class="panel outcome-panel"><div class="eyebrow">YOUR NEXT STEP</div><h2 id="outcome-title">先定义你的方向</h2><p id="outcome-copy">选择学术版或企业版，查看本轮会得到的交付。</p><ol class="deliverables"><li><span>01</span><div><strong>一份数据审核摘要</strong><small>哪些事实可靠，哪些仍待确认</small></div></li><li><span>02</span><div><strong>有依据的候选方向</strong><small>问题、价值、基线与最小验证</small></div></li><li><span>03</span><div><strong>一次清楚的取舍</strong><small>比较证据与投入，由你选定方案</small></div></li></ol><p class="rail-note">只确定探索方向，不自动开始实验或业务实施。</p></section><section class="panel confirm-panel"><div id="connection" class="connection"></div><h2>准备好，就从这里开始</h2><p id="delivery-note" class="muted"></p>
 <div class="toolbar"><button id="confirm" type="button"></button><button id="download" class="secondary" type="button" disabled>保存设置文件</button><button id="reset" class="secondary" type="button">恢复初始权重</button></div>
 <p id="status" class="status" role="status" aria-live="polite">初始权重尚未确认。</p>
 <details id="reply-details"><summary>查看可发送到对话的偏好文字</summary><textarea id="reply" aria-label="偏好确认文字" readonly></textarea></details>
-</section></main><script>
+</section></aside></div></main><script>
 "use strict";
 const config = __CONFIG__;
 const byId = id => document.getElementById(id);
@@ -123,10 +130,12 @@ function selectMode(mode) {
   modeLabel = mode === "academic" ? "学术版" : mode === "business" ? "企业版" : "尚未选择版本";
   byId("weights").replaceChildren(); controls.clear();
   byId("weight-section").hidden = !mode;
+  byId("outcome-title").textContent = mode === "academic" ? "找到值得研究的问题" : mode === "business" ? "找到值得验证的机会" : "先定义你的方向";
+  byId("outcome-copy").textContent = mode === "academic" ? "从数据能回答什么出发，明确研究问题、贡献边界与验证路径。" : mode === "business" ? "把尚未用足的数据，连接到具体业务动作、投入与效果验证。" : "选择学术版或企业版，查看本轮会得到的交付。";
   byId("presets").replaceChildren();
   if (mode) {
     const options = mode === "academic" ? [["均衡考虑",[20,20,20,20,20]],["探索创新",[40,25,15,10,10]],["优先可行",[15,15,25,30,15]]] : [["均衡考虑",[20,20,20,20,20]],["尽快验证",[20,35,15,10,20]],["控制投入",[20,15,35,20,10]]];
-    for (const [label,values] of options) {const b=element("button",label,"secondary"); b.type="button"; b.addEventListener("click",()=>{if(pending||submitted)return;config.dimensions.forEach((d,i)=>{weights[d.id]=values[i];controls.get(d.id).slider.value=values[i];controls.get(d.id).number.value=values[i];});refresh();}); byId("presets").append(b);}
+    for (const [label,values] of options) {const b=element("button",label,"secondary"); b.type="button"; b.dataset.values=JSON.stringify(values); b.addEventListener("click",()=>{if(pending||submitted)return;config.dimensions.forEach((d,i)=>{weights[d.id]=values[i];controls.get(d.id).slider.value=values[i];controls.get(d.id).number.value=values[i];});refresh();}); byId("presets").append(b);}
   }
   for (const [key,button] of modeButtons) {button.setAttribute("aria-pressed",String(key===mode)); button.className = key===mode ? "" : "secondary";}
 document.title = modeLabel + " · 想法生成前的偏好设置";
@@ -159,6 +168,7 @@ function refresh() {
     ui.share.textContent = percent === null ? "—" : percent.toFixed(1)+"%";
     ui.fill.style.width = percent === null ? "0%" : percent+"%";
   }
+  for(const b of byId("presets").querySelectorAll("button")){const values=JSON.parse(b.dataset.values);b.setAttribute("aria-pressed",String(config.dimensions.every((d,i)=>weights[d.id]===values[i])));}
   byId("confirm").disabled = pending || submitted || !valid;
   byId("download").disabled = pending || submitted || !valid;
   byId("reset").disabled = pending || submitted || !config.mode;

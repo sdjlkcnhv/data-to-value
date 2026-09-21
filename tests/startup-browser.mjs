@@ -64,10 +64,13 @@ try {
   assert.equal(await evaluate('document.querySelector("#weights input[type=number]").value'),'40');
   const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
   await fs.writeFile(path.join(profile,'startup.png'),Buffer.from(shot.data,'base64'));
-  await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
-  assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'),true);
-  const mobile=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
-  await fs.writeFile(path.join(profile,'mobile.png'),Buffer.from(mobile.data,'base64'));
+  for(const [name,relative] of [['listing','publishing/preview.html'],['comparison','examples/business-comparison.html']]) {
+    await call('Page.navigate',{url:pathToFileURL(path.join(root,relative)).href});
+    for(let i=0;i<40;i++){if(await evaluate('document.readyState === "complete" && document.querySelector("h1") !== null'))break;await new Promise(r=>setTimeout(r,100));}
+    assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'),true);
+    const image=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
+    await fs.writeFile(path.join(profile,name+'.png'),Buffer.from(image.data,'base64'));
+  }
   // Test the real local receiver through a browser, including its Origin validation.
   const receipt=path.join(profile,'confirmed.json');
   collector=spawn(process.env.PYTHON || 'python',[path.join(root,'scripts/configure_preferences.py'),
@@ -97,6 +100,6 @@ try {
   assert.match(await evaluate('document.getElementById("status").textContent'), /设置已保存/);
   assert.equal(await evaluate('document.getElementById("confirm").disabled'),true);
   assert.deepEqual(errors,[]);
-  console.log('PASS: both modes, draft preservation, zero/all-zero, presets, desktop/mobile layout, real browser POST and saved receipt.');
+  console.log('PASS: both modes, draft preservation, zero/all-zero, presets, desktop layout, real browser POST and saved receipt.');
   console.log('Screenshot: '+path.join(profile,'startup.png'));
 } finally {if(ws)ws.close();browser.kill();if(collector)collector.kill();}

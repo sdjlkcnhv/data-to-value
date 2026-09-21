@@ -1,12 +1,14 @@
 # data-to-value｜数据变选题 · 数据变方案
 
-**有数据，不知道能做什么？从论文选题到业务机会，先找到值得验证的方向。**
+**让已有数据，长出下一步。**
+
+从数据集到论文选题，从业务记录到值得验证的机会。先看清证据与取舍，再决定把时间投入哪里。
 
 ![从数据到候选方案的流程示意](assets/cover.png)
 
 上传已有数据和说明，在第一步同时选择学术版或企业版并设置权重。技能审核说明与实物，提出有依据的候选，用评分和可视化说明取舍，最后由你选择下一步。
 
-[下载当前调试包](https://github.com/sdjlkcnhv/data-to-value/releases/tag/v0.1.0) · [安装说明](INSTALL.md) · [先看样例](examples/README.md) · [统一启动页](examples/start.html) · [支持范围](references/compatibility.md)
+[下载当前调试包](https://github.com/sdjlkcnhv/data-to-value/releases/tag/v0.1.0) · [安装说明](INSTALL.md) · [先看样例](examples/README.md) · [统一启动页](examples/start.html) · [发布页预览](publishing/preview.html) · [支持范围](references/compatibility.md)
 
 > 当前私有调试，下载需 GitHub 授权账号。直接覆盖同一安装包，不递增版本；`v0.1.0` 是固定下载入口。尚未在 SkillHub 公开上架。
 
@@ -130,3 +132,5 @@ python -m unittest discover -s tests -v
 可以，前提是助手能在用户本机运行临时接收器：用 `configure_preferences.py --output <页面路径> --result <回执路径> --open` 启动，用户点“确认并继续”，设置就写入当前任务，助手读取后继续；无需复制、API Key或付费服务器。接收器仅监听127.0.0.1，确认后退出。普通聊天网页/远程沙箱不假定具备此能力，优先用原生表单或一次对话确认。
 
 直接打开随包HTML是离线预览：页面不能自行关联当前对话或给模型发送消息。此时提供复制设置和保存设置文件两种方式，明确标注未自动提交。方案比较页目前仍通过对话确认选择，不声称它具备启动页的本机回传。
+
+面向电脑端数据工作流；推荐在具备文件读取及执行能力的桌面宿主使用，手机端不作为支持目标。

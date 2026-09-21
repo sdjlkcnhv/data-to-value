@@ -36,10 +36,14 @@ noscript{display:block;padding:20px;background:#fff2d5}
 
 :root{--ink:#163932;--muted:#60766f;--line:#dce6df;--blue:#166b62}body{background:radial-gradient(ellipse at 90% 0%,#e0eee4,transparent 50%),#f7f7f2}header{padding:16px 0 20px}h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.7px}.panel,.card{border-radius:20px;box-shadow:0 6px 24px #193d2b05}.panel{padding:26px}.card{padding:22px}.eyebrow{font-size:12px;letter-spacing:2px}button{border-radius:11px;font-weight:600}button.secondary{background:#edf3ed}button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #d3a44b;outline-offset:3px}.choice{background:#edf5ef}.choice:has(input:checked){outline:2px solid var(--blue)}.selection{background:#f1f7f0;border:1px solid #b9d3c5}.s4{background:#cee4d4}.s5{background:#add3bc}th{background:#f0f5ef}.weight input,textarea{border-color:var(--line)}.badge{border-radius:20px}input{accent-color:var(--blue)}
 @media(max-width:640px){.panel,.card{padding:18px}}
+
+body{background:#f4f3ef}main{max-width:1320px;padding:30px 42px 60px}.report-brand{border-bottom:1px solid var(--line);padding:0 0 22px;font-size:12px;font-weight:650;letter-spacing:2px}.report-brand span{float:right;font-size:10px;font-weight:400;letter-spacing:1px;color:var(--muted)}header{padding:40px 0 24px}header h1{font-size:clamp(30px,4vw,48px);line-height:1.3}.panel,.card{box-shadow:none;border-radius:16px}.cards .card{background:#fbfcf9}.cards .card:has(input:checked){outline:2px solid #166b62;background:#eef6ef}.total{font-size:34px;font-variant-numeric:tabular-nums}.badge{font-size:10px}.selection{background:#143e36;color:#f1f6ef}.selection p,.selection .muted{color:#c0d3c8}.selection textarea{background:#f7faf5;color:#173b31}.selection button{background:#d9e9d4;color:#173b31}.selection button.secondary{background:#ffffff17;color:#fff}.weight input{background:#f7faf5}.evidence-item{border-color:#a6c3b0}td,th{font-size:13px}button{padding:12px 18px}
+@media(max-width:640px){main{padding:24px 16px}.report-brand span{display:none}header{padding-top:28px}}
 </style>
 </head>
 <body><aside style="padding:14px;background:#fff2d5;color:#573f16;text-align:center">合成样例演示 · 非真实项目成果 · 页面操作不代表真实任务确认</aside><noscript>此交互报告需要JavaScript。请查看随报告提供的评分表及证据说明。</noscript>
 <main>
+<div class="report-brand">◈ &nbsp; DATA-TO-VALUE <span>DECISION STUDIO / 方案比较</span></div>
 <header><div id="mode" class="eyebrow"></div><h1 id="title"></h1>
 <p id="intro" class="muted">评分帮助理解取舍，最终方案由你选择。综合分不是成功概率。</p></header>
 <section class="panel"><h2>调整比较偏好</h2><p id="weight-basis" class="muted"></p>

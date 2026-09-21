@@ -1,86 +1,4 @@
-#!/usr/bin/env python3
-"""Render evidence-backed candidate scores as an offline interactive HTML report."""
-
-import argparse
-import json
-import math
-import webbrowser
-from console_utils import configure_console
-from pathlib import Path
-
-
-BASES = {"已核验事实", "文献依据", "估算", "假设", "未知"}
-MATURITIES = {"机会假设", "可验证方案", "已获支持方案"}
-
-
-def require_text(obj, key, context):
-    if not isinstance(obj.get(key), str) or not obj[key].strip():
-        raise ValueError(f"{context}.{key}: requires nonempty text")
-
-
-def validate(data):
-    if not isinstance(data, dict):
-        raise ValueError("Input must be a JSON object")
-    for key in ("title", "decision", "weight_basis"):
-        require_text(data, key, "report")
-    if data.get("mode") not in ("academic", "business"):
-        raise ValueError("mode must be academic or business")
-    dimensions = data.get("dimensions")
-    candidates = data.get("candidates")
-    if not isinstance(dimensions, list) or not dimensions:
-        raise ValueError("dimensions must be a nonempty array")
-    if not isinstance(candidates, list) or not candidates:
-        raise ValueError("candidates must be a nonempty array")
-    dimension_ids = set()
-    for dimension in dimensions:
-        if not isinstance(dimension, dict):
-            raise ValueError("Each dimension must be an object")
-        for key in ("id", "label"):
-            require_text(dimension, key, "dimension")
-        if dimension["id"] in dimension_ids:
-            raise ValueError("Duplicate dimension id: " + dimension["id"])
-        dimension_ids.add(dimension["id"])
-        weight = dimension.get("weight")
-        if type(weight) not in (int, float) or not math.isfinite(weight) or weight < 0:
-            raise ValueError("Dimension weights must be finite nonnegative numbers")
-    if not math.isfinite(sum(item["weight"] for item in dimensions)) or sum(item["weight"] for item in dimensions) <= 0:
-        raise ValueError("Total dimension weight must be finite and positive")
-    candidate_ids = set()
-    for candidate in candidates:
-        if not isinstance(candidate, dict):
-            raise ValueError("Each candidate must be an object")
-        for key in (
-            "id", "name", "summary", "data_basis", "risks", "time", "cost", "next_step"
-        ):
-            require_text(candidate, key, "candidate")
-        if candidate["id"] in candidate_ids:
-            raise ValueError("Duplicate candidate id: " + candidate["id"])
-        candidate_ids.add(candidate["id"])
-        if candidate.get("maturity") not in MATURITIES:
-            raise ValueError("Unknown candidate maturity")
-        if candidate.get("eligibility") not in ("ready", "conditional", "blocked"):
-            raise ValueError("eligibility must be ready, conditional, or blocked")
-        scores = candidate.get("scores")
-        if not isinstance(scores, dict) or set(scores) != dimension_ids:
-            raise ValueError("Each candidate must include exactly the same score dimensions")
-        for dimension_id, score in scores.items():
-            if not isinstance(score, dict) or "value" not in score:
-                raise ValueError("Each score requires an explicit value or null")
-            value = score["value"]
-            if value is not None and (type(value) is not int or not 1 <= value <= 5):
-                raise ValueError("Score values must be integers 1-5 or null")
-            for key in ("reason", "evidence", "basis"):
-                require_text(score, key, candidate["id"] + "." + dimension_id)
-            if score["basis"] not in BASES:
-                raise ValueError("Unknown score basis")
-            if (value is None) != (score["basis"] == "未知"):
-                raise ValueError("Unknown scores must use null and basis 未知 together")
-    if "recommendation" in data and not isinstance(data["recommendation"], str):
-        raise ValueError("recommendation must be text")
-    return data
-
-
-HTML = r"""<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -117,7 +35,7 @@ noscript{display:block;padding:20px;background:#fff2d5}
 @media print{body{background:#fff}main{padding:0;max-width:none}.panel,.card{break-inside:avoid}.toolbar,.choice,.selection{display:none}.scroll{overflow:visible}.cards{display:block}.card{margin:12px 0}}
 </style>
 </head>
-<body><noscript>此交互报告需要JavaScript。请查看随报告提供的评分表及证据说明。</noscript>
+<body><aside style="padding:14px;background:#fff2d5;color:#573f16;text-align:center">合成样例演示 · 非真实项目成果 · 页面操作不代表真实任务确认</aside><noscript>此交互报告需要JavaScript。请查看随报告提供的评分表及证据说明。</noscript>
 <main>
 <header><div id="mode" class="eyebrow"></div><h1 id="title"></h1>
 <p id="intro" class="muted">评分帮助理解取舍，最终方案由你选择。综合分不是成功概率。</p></header>
@@ -139,7 +57,7 @@ noscript{display:block;padding:20px;background:#fff2d5}
 </main>
 <script>
 "use strict";
-const report = __REPORT_DATA__;
+const report = {"mode": "business", "title": "\u4f01\u4e1a\u7248 \u00b7 \u5408\u6210\u6837\u4f8b\uff0c\u975e\u771f\u5b9e\u6210\u679c", "decision": "\u6bd4\u8f83\u4e09\u4e2a\u6f14\u793a\u5019\u9009\uff1b\u6b63\u5f0f\u4efb\u52a1\u987b\u5b9e\u9645\u5ba1\u6838\u3001\u786e\u8ba4\u504f\u597d\u5e76\u91cd\u65b0\u8bc4\u5206\u3002", "weight_basis": "\u4ec5\u4f9b\u6f14\u793a\u7684\u521d\u59cb\u6743\u91cd\uff0c\u672a\u66ff\u7528\u6237\u786e\u8ba4\uff1b\u4efb\u4e00\u5173\u952e\u7ef4\u5ea6\u672a\u77e5\u65f6\u4e0d\u663e\u793a\u5b8c\u6574\u603b\u5206\u3002", "dimensions": [{"id": "value", "label": "\u6f5c\u5728\u51c0\u4ef7\u503c", "weight": 30}, {"id": "time", "label": "\u89c1\u6548\u65f6\u95f4", "weight": 20}, {"id": "cost", "label": "\u6267\u884c\u6210\u672c", "weight": 20}, {"id": "action", "label": "\u843d\u5730\u6761\u4ef6", "weight": 15}, {"id": "measure", "label": "\u6548\u679c\u53ef\u6d4b\u91cf\u6027", "weight": 15}], "candidates": [{"id": "business-1", "name": "\u5c65\u7ea6\u5f02\u5e38\u590d\u76d8\u6e05\u5355", "summary": "\u7ed9\u8fd0\u8425\u56e2\u961f\u5217\u51fa\u9700\u8981\u590d\u76d8\u7684\u8fdf\u4ea4\u8ba2\u5355\u3002", "data_basis": "\u5408\u6210\u6837\u4f8b\uff1a12\u4e2a\u8ba2\u5355\u4e2d5\u4e2adelivery_days\u5927\u4e8epromised_days\u3002", "risks": "\u4ea4\u4ed8\u5929\u6570\u4e3a\u4e8b\u540e\u5b57\u6bb5\uff1b\u4e0d\u80fd\u4f5c\u4e3a\u4e0b\u5355\u65f6\u9884\u8b66\u8f93\u5165\u3002", "next_step": "\u5148\u7528SQL\u6216\u7b5b\u9009\u751f\u6210\u6e05\u5355\uff0c\u6838\u5bf9\u5f02\u5e38\u539f\u56e0\u4e0e\u8d23\u4efb\u6e20\u9053\u3002", "time": "\u6f14\u793a\u5047\u8bbe\uff1a1\u20133\u4eba\u65e5\uff1b\u5b9e\u9645\u65e5\u5386\u5468\u671f\u5f85\u6838\u3002", "cost": "\u6f14\u793a\u5047\u8bbe\uff1a\u590d\u7528\u73b0\u6709\u4eba\u5458\uff1b\u91d1\u989d\u4e0e\u6301\u7eed\u6210\u672c\u672a\u77e5\u3002", "maturity": "\u673a\u4f1a\u5047\u8bbe", "eligibility": "conditional", "scores": {"value": {"value": null, "basis": "\u672a\u77e5", "reason": "\u65e0\u6210\u672c\u3001\u6bdb\u5229\u53ca\u589e\u91cf\u6548\u679c\u8bc1\u636e\uff0c\u4e0d\u80fd\u8bc4\u4f30\u51c0\u4ef7\u503c\u3002", "evidence": "examples/README.md\u4e2d\u7684\u6570\u636e\u8fb9\u754c\uff1b\u771f\u5b9e\u4efb\u52a1\u987b\u8865\u8bc1\u636e\u3002"}, "time": {"value": 4, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "cost": {"value": 4, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "action": {"value": 3, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "measure": {"value": 3, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}}}, {"id": "business-2", "name": "\u9000\u8d27\u539f\u56e0\u8865\u5f55\u8bd5\u70b9", "summary": "\u4e3a\u552e\u540e\u589e\u52a0\u7ed3\u6784\u5316\u539f\u56e0\u8bb0\u5f55\uff0c\u652f\u6301\u540e\u7eed\u6539\u8fdb\u3002", "data_basis": "\u5408\u6210\u6837\u4f8b\uff1a4\u4e2areturn_flag=1\uff0c\u4f46\u7f3a\u5c11\u539f\u56e0\u548c\u5904\u7406\u8bb0\u5f55\u3002", "risks": "\u6ca1\u6709\u552e\u540e\u89e6\u8fbe\u8bb0\u5f55\uff1b\u539f\u56e0\u6807\u7b7e\u4e0e\u91c7\u96c6\u8d23\u4efb\u9700\u786e\u8ba4\u3002", "next_step": "\u5148\u660e\u786e\u539f\u56e0\u5206\u7c7b\u3001\u91c7\u96c6\u4eba\u548c\u8986\u76d6\u7387\uff0c\u518d\u8bc4\u4f30\u8bd5\u70b9\u3002", "time": "\u6f14\u793a\u5047\u8bbe\uff1a1\u20133\u4eba\u65e5\uff1b\u5b9e\u9645\u65e5\u5386\u5468\u671f\u5f85\u6838\u3002", "cost": "\u6f14\u793a\u5047\u8bbe\uff1a\u590d\u7528\u73b0\u6709\u4eba\u5458\uff1b\u91d1\u989d\u4e0e\u6301\u7eed\u6210\u672c\u672a\u77e5\u3002", "maturity": "\u673a\u4f1a\u5047\u8bbe", "eligibility": "conditional", "scores": {"value": {"value": null, "basis": "\u672a\u77e5", "reason": "\u65e0\u6210\u672c\u3001\u6bdb\u5229\u53ca\u589e\u91cf\u6548\u679c\u8bc1\u636e\uff0c\u4e0d\u80fd\u8bc4\u4f30\u51c0\u4ef7\u503c\u3002", "evidence": "examples/README.md\u4e2d\u7684\u6570\u636e\u8fb9\u754c\uff1b\u771f\u5b9e\u4efb\u52a1\u987b\u8865\u8bc1\u636e\u3002"}, "time": {"value": 3, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "cost": {"value": 3, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "action": {"value": 2, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "measure": {"value": 3, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}}}, {"id": "business-3", "name": "\u4ea4\u4ed8\u627f\u8bfa\u89c4\u5219\u68c0\u67e5", "summary": "\u590d\u6838\u4e0d\u540c\u6e20\u9053\u7684\u627f\u8bfa\u5929\u6570\u4e0e\u5c65\u7ea6\u5dee\u5f02\u3002", "data_basis": "\u5408\u6210\u6837\u4f8b\uff1achannel\u3001category\u3001promised_days\u3001delivery_days\u53ef\u4f5c\u5206\u7ec4\u63cf\u8ff0\u3002", "risks": "\u6837\u4f8b\u5f88\u5c0f\uff0c\u7f3a\u5c11\u65fa\u6de1\u5b63\u3001\u5e93\u5b58\u4e0e\u7269\u6d41\u4fe1\u606f\u3002", "next_step": "\u5148\u590d\u6838\u73b0\u6709\u627f\u8bfa\u89c4\u5219\uff0c\u4e0d\u76f4\u63a5\u8c03\u6574\u751f\u4ea7\u627f\u8bfa\u3002", "time": "\u6f14\u793a\u5047\u8bbe\uff1a1\u20133\u4eba\u65e5\uff1b\u5b9e\u9645\u65e5\u5386\u5468\u671f\u5f85\u6838\u3002", "cost": "\u6f14\u793a\u5047\u8bbe\uff1a\u590d\u7528\u73b0\u6709\u4eba\u5458\uff1b\u91d1\u989d\u4e0e\u6301\u7eed\u6210\u672c\u672a\u77e5\u3002", "maturity": "\u673a\u4f1a\u5047\u8bbe", "eligibility": "conditional", "scores": {"value": {"value": null, "basis": "\u672a\u77e5", "reason": "\u65e0\u6210\u672c\u3001\u6bdb\u5229\u53ca\u589e\u91cf\u6548\u679c\u8bc1\u636e\uff0c\u4e0d\u80fd\u8bc4\u4f30\u51c0\u4ef7\u503c\u3002", "evidence": "examples/README.md\u4e2d\u7684\u6570\u636e\u8fb9\u754c\uff1b\u771f\u5b9e\u4efb\u52a1\u987b\u8865\u8bc1\u636e\u3002"}, "time": {"value": 3, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "cost": {"value": 4, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "action": {"value": 2, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "measure": {"value": 2, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}}}], "recommendation": "\u8fd9\u91cc\u6ca1\u6709\u9884\u9009\u65b9\u6848\u3002\u8bf7\u89c2\u5bdf\u5206\u9879\u4e0e\u672a\u77e5\uff0c\u518d\u5728\u5bf9\u8bdd\u4e2d\u660e\u786e\u9009\u62e9\uff1b\u672c\u9875\u4e0d\u4f1a\u81ea\u52a8\u5f00\u59cb\u5b9e\u9a8c\u6216\u4e1a\u52a1\u8bd5\u70b9\u3002"};
 const eligibilityLabels = {ready:"可比较", conditional:"条件性参考", blocked:"暂不参与"};
 const byId = (id) => document.getElementById(id);
 function element(tag, text, className) {
@@ -280,64 +198,4 @@ byId("copy").addEventListener("click",async () => {
 });
 if (report.recommendation) { byId("advice-panel").hidden = false; byId("advice").textContent = report.recommendation; }
 refresh();
-</script></body></html>"""
-
-
-def render(data):
-    validate(data)
-    payload = json.dumps(data, ensure_ascii=True, allow_nan=False).replace("<", r"\u003c")
-    return HTML.replace("__REPORT_DATA__", payload)
-
-
-def main():
-    configure_console()
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", required=True, type=Path)
-    parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--preferences-file", type=Path, help="Apply explicitly confirmed weights from the initial preference form")
-    parser.add_argument(
-        "--open", dest="open_report", action="store_true",
-        help="Request opening the finished report in the local desktop browser; "
-             "use the host application's preview instead in remote environments",
-    )
-    args = parser.parse_args()
-    try:
-        if args.input.resolve() == args.output.resolve():
-            raise ValueError("Input and output paths must differ")
-        if args.preferences_file and args.preferences_file.resolve() == args.output.resolve():
-            raise ValueError("Preferences and output paths must differ")
-        data = json.loads(args.input.read_text(encoding="utf-8-sig"))
-        if args.preferences_file:
-            from configure_preferences import validate_preferences
-
-            validate(data)
-            preferences = validate_preferences(
-                json.loads(args.preferences_file.read_text(encoding="utf-8-sig")),
-                expected_mode=data["mode"], dimension_ids=[d["id"] for d in data["dimensions"]],
-            )
-            for dimension in data["dimensions"]:
-                dimension["weight"] = preferences["weights"][dimension["id"]]
-            data["weight_basis"] = "用户在想法生成前确认的权重；各项按相对份额统一归一化。"
-            if preferences.get("constraints"):
-                data["weight_basis"] += "另有约束：" + preferences["constraints"]
-        result = render(data)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(result, encoding="utf-8")
-    except (OSError, ValueError) as error:
-        parser.exit(2, "Error: " + str(error) + "\n")
-    print("Generated: " + str(args.output.resolve()))
-    if args.open_report:
-        report_uri = args.output.resolve().as_uri()
-        try:
-            requested = webbrowser.open(report_uri, new=2)
-        except (OSError, webbrowser.Error) as error:
-            print("Browser launch unavailable: " + str(error))
-            requested = False
-        if requested:
-            print("Browser open requested: " + report_uri)
-        else:
-            print("Report saved; use the host preview or open this file: " + report_uri)
-
-
-if __name__ == "__main__":
-    main()
+</script></body></html>

@@ -1,0 +1,13 @@
+order_id,channel,category,promised_days,delivery_days,return_flag
+O01,web,A,3,2,0
+O02,web,A,3,5,1
+O03,store,B,2,2,0
+O04,web,B,3,4,1
+O05,store,A,2,1,0
+O06,web,A,3,3,0
+O07,store,B,2,4,1
+O08,web,B,3,2,0
+O09,store,A,2,3,0
+O10,web,A,3,6,1
+O11,store,B,2,2,0
+O12,web,B,3,3,0

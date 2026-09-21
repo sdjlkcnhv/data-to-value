@@ -36,3 +36,7 @@
 ## 自动化模板部署状态
 
 `tests/compatibility-workflow.yml`提供三操作系统、两个Python版本的自动化矩阵。当前GitHub发布授权不含workflow权限，未将其作为活动工作流部署，也未宣称云端测试通过。获得工作流写入权限后，可复制到 `.github/workflows/compatibility.yml` 并查看该提交的Actions结果。模板文件本身不触发CI。
+
+## 合并启动交互（2026-09-21）
+
+本机Windows Edge无头浏览器实测：无默认版本、两版切换、对应权重、草稿保留、零权重/全零拦截、重置和确认文字生成通过；截图人工检查完成。可用Node 22+执行 `node tests/startup-browser.mjs <Edge或Chrome可执行路径>` 复现。不代表豆包/DeepSeek的宿主预览、自动弹窗或确认回传已实测。HTML不需付费服务器，原生表单或一次对话确认是等效入口。

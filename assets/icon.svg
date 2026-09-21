@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="data-to-value 数据到想法">
+<rect width="512" height="512" rx="112" fill="#102E2B"/>
+<g fill="#BCE7D7"><rect x="86" y="125" width="62" height="62" rx="12"/><rect x="86" y="213" width="62" height="62" rx="12"/><rect x="86" y="301" width="62" height="62" rx="12"/></g>
+<path d="M182 244h76m-25-25 25 25-25 25" fill="none" stroke="#D4B77A" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M319 304c0-44-40-51-40-101a67 67 0 0 1 134 0c0 50-40 57-40 101z" fill="#F7F4EB"/>
+<path d="M324 329h44m-36 24h28" fill="none" stroke="#D4B77A" stroke-width="14" stroke-linecap="round"/>
+</svg>

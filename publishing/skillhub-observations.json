@@ -1,0 +1,83 @@
+{
+  "observed_date": "2026-09-21",
+  "list_queries": [
+    "https://api.skillhub.cn/api/skills?page=1&pageSize=12&sortBy=downloads&order=desc",
+    "https://api.skillhub.cn/api/skills?page=1&pageSize=8&sortBy=downloads&order=desc&keyword=research",
+    "https://api.skillhub.cn/api/skills?page=1&pageSize=8&sortBy=downloads&order=desc&keyword=data"
+  ],
+  "caveat": "接口展示计数快照；不同来源，统计口径未审计；不是独立用户数，不证明文案引起下载。",
+  "skills": [
+    {
+      "name": "编程专家.Skill",
+      "slug": "dev-expert",
+      "downloads": 1229137,
+      "installs": 0,
+      "stars": 252,
+      "source": "community",
+      "version": "1.21.7",
+      "namespace": "indiv-ebandao",
+      "detail_url": "https://www.skillhub.cn/skills/indiv-ebandao/dev-expert",
+      "file_url": "https://api.skillhub.cn/api/v1/skills/dev-expert/file?path=SKILL.md&namespace=indiv-ebandao"
+    },
+    {
+      "name": "self-improving agent",
+      "slug": "self-improving-agent",
+      "downloads": 1222307,
+      "installs": 86140,
+      "stars": 4507,
+      "source": "clawhub",
+      "version": "3.0.24",
+      "namespace": "clawhub_pskoett",
+      "detail_url": "https://www.skillhub.cn/skills/clawhub_pskoett/self-improving-agent",
+      "file_url": "https://api.skillhub.cn/api/v1/skills/self-improving-agent/file?path=SKILL.md&namespace=clawhub_pskoett"
+    },
+    {
+      "name": "Find Skills",
+      "slug": "find-skills",
+      "downloads": 1004793,
+      "installs": 75956,
+      "stars": 1762,
+      "source": "clawhub",
+      "version": "1.0.0",
+      "namespace": "clawhub_root",
+      "detail_url": "https://www.skillhub.cn/skills/clawhub_root/find-skills",
+      "file_url": "https://api.skillhub.cn/api/v1/skills/find-skills/file?path=SKILL.md&namespace=clawhub_root"
+    },
+    {
+      "name": "Deep Research Pro",
+      "slug": "deep-research-pro",
+      "downloads": 61027,
+      "installs": 7380,
+      "stars": 118,
+      "source": "clawhub",
+      "version": "1.0.2",
+      "namespace": "clawhub_parags",
+      "detail_url": "https://www.skillhub.cn/skills/clawhub_parags/deep-research-pro",
+      "file_url": "https://api.skillhub.cn/api/v1/skills/deep-research-pro/file?path=SKILL.md&namespace=clawhub_parags"
+    },
+    {
+      "name": "smart-charts",
+      "slug": "smart-charts",
+      "downloads": 92983,
+      "installs": 0,
+      "stars": 1,
+      "source": "community",
+      "version": "8.1.1",
+      "namespace": "user_814dbe54",
+      "detail_url": "https://www.skillhub.cn/skills/user_814dbe54/smart-charts",
+      "file_url": "https://api.skillhub.cn/api/v1/skills/smart-charts/file?path=SKILL.md&namespace=user_814dbe54"
+    },
+    {
+      "name": "Data Analysis",
+      "slug": "data-analysis",
+      "downloads": 91513,
+      "installs": 9814,
+      "stars": 244,
+      "source": "clawhub",
+      "version": "1.0.2",
+      "namespace": "clawhub_ivangdavila",
+      "detail_url": "https://www.skillhub.cn/skills/clawhub_ivangdavila/data-analysis",
+      "file_url": "https://api.skillhub.cn/api/v1/skills/data-analysis/file?path=SKILL.md&namespace=clawhub_ivangdavila"
+    }
+  ]
+}

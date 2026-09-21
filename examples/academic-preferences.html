@@ -1,59 +1,4 @@
-#!/usr/bin/env python3
-"""Create an offline preference form; optionally collect confirmation on localhost."""
-
-import argparse
-from datetime import datetime, timezone
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import json
-import math
-from pathlib import Path
-import secrets
-import time
-import webbrowser
-from console_utils import configure_console
-
-
-PROFILES = {
-    "academic": [
-        ("novelty", "创新度", 30, "相对已有研究，提出有实质新增量的问题、测量、设计或方法。"),
-        ("significance", "研究意义", 25, "研究结果能够改变对重要领域问题的理解或实践。"),
-        ("data_fit", "数据适配", 20, "现有数据的变量、覆盖范围与独立样本适合研究问题。"),
-        ("feasibility", "实施可行性", 15, "所需时间、能力、算力和协作条件与现有资源匹配。"),
-        ("validation", "验证设计", 10, "能够用合适对照、评价和确认资料检验主要主张。"),
-    ],
-    "business": [
-        ("value", "潜在净价值", 30, "计入实施和运营成本后，仍有可解释的增收、降本或决策改善空间。"),
-        ("time", "见效时间", 20, "更早获得可用验证结果，或达到共同约定的业务里程碑。"),
-        ("cost", "执行成本", 20, "启动、接入、人工和持续维护的投入更容易承受。"),
-        ("action", "落地条件", 15, "具备使用者、执行责任、行动渠道和维护条件。"),
-        ("measure", "效果可测量性", 15, "能够记录结果并判断相对现状是否产生实际改善。"),
-    ],
-}
-
-
-def validate_preferences(data, expected_mode=None, dimension_ids=None):
-    if not isinstance(data, dict) or data.get("schema_version") != 1:
-        raise ValueError("Preference data must use schema_version 1")
-    mode = data.get("mode")
-    if not isinstance(mode, str) or mode not in PROFILES or (expected_mode is not None and mode != expected_mode):
-        raise ValueError("Preference mode does not match this task")
-    if data.get("confirmed") is not True:
-        raise ValueError("Preferences have not been explicitly confirmed")
-    expected_ids = set(dimension_ids if dimension_ids is not None else (row[0] for row in PROFILES[mode]))
-    weights = data.get("weights")
-    if not isinstance(weights, dict) or set(weights) != expected_ids:
-        raise ValueError("Preference dimensions must exactly match the report")
-    if any(type(v) not in (int, float) or not math.isfinite(v) or v < 0 for v in weights.values()):
-        raise ValueError("Preference weights must be finite nonnegative numbers")
-    if not math.isfinite(sum(weights.values())) or sum(weights.values()) <= 0:
-        raise ValueError("Total preference weight must be finite and positive")
-    constraints = data.get("constraints", "")
-    if not isinstance(constraints, str) or len(constraints) > 4000:
-        raise ValueError("Constraints must be text of at most 4000 characters")
-    return data
-
-
-HTML = r"""<!doctype html>
+<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>想法生成前的偏好设置</title><style>
 :root{color-scheme:light;--ink:#173042;--muted:#586d7b;--line:#d9e4e9;--blue:#236c90}
@@ -70,7 +15,7 @@ textarea{width:100%;min-height:80px;resize:vertical;padding:12px;border:1px soli
 button.secondary{background:#e7f0f5;color:var(--ink)}button:disabled{opacity:.5;cursor:default}.status{margin:14px 0 0;color:var(--blue)}.confirm-panel{border:2px solid #bed8e5}
 details{margin-top:14px}summary{cursor:pointer}.error{color:#92382f}noscript{display:block;padding:20px;background:#fff2d5}
 @media(max-width:640px){main{padding:22px 14px}h1{font-size:25px}.card,.panel{padding:17px}}
-</style></head><body><noscript>请在对话中说明各项权重，或明确表示使用初始权重。</noscript><main>
+</style></head><body><aside style="padding:14px;background:#fff2d5;color:#573f16;text-align:center">合成样例演示 · 非真实项目成果 · 页面操作不代表真实任务确认</aside><noscript>请在对话中说明各项权重，或明确表示使用初始权重。</noscript><main>
 <header><div id="mode" class="eyebrow"></div><h1>先选版本，再设置你看重的指标</h1>
 <p>先确认偏好，再依据审核过的数据生成候选方案。看到具体方案后，仍可调整权重。</p>
 <p class="muted">拖动滑块或输入相对份额，各项会自动换算为百分比。初始配置仅供起步；接受它时直接确认即可。</p></header>
@@ -86,7 +31,7 @@ details{margin-top:14px}summary{cursor:pointer}.error{color:#92382f}noscript{dis
 <details id="reply-details"><summary>查看可发送到对话的偏好文字</summary><textarea id="reply" aria-label="偏好确认文字" readonly></textarea></details>
 </section></main><script>
 "use strict";
-const config = __CONFIG__;
+const config = {"mode": "academic", "profiles": {"academic": [{"id": "novelty", "label": "\u521b\u65b0\u5ea6", "weight": 30, "description": "\u76f8\u5bf9\u5df2\u6709\u7814\u7a76\uff0c\u63d0\u51fa\u6709\u5b9e\u8d28\u65b0\u589e\u91cf\u7684\u95ee\u9898\u3001\u6d4b\u91cf\u3001\u8bbe\u8ba1\u6216\u65b9\u6cd5\u3002"}, {"id": "significance", "label": "\u7814\u7a76\u610f\u4e49", "weight": 25, "description": "\u7814\u7a76\u7ed3\u679c\u80fd\u591f\u6539\u53d8\u5bf9\u91cd\u8981\u9886\u57df\u95ee\u9898\u7684\u7406\u89e3\u6216\u5b9e\u8df5\u3002"}, {"id": "data_fit", "label": "\u6570\u636e\u9002\u914d", "weight": 20, "description": "\u73b0\u6709\u6570\u636e\u7684\u53d8\u91cf\u3001\u8986\u76d6\u8303\u56f4\u4e0e\u72ec\u7acb\u6837\u672c\u9002\u5408\u7814\u7a76\u95ee\u9898\u3002"}, {"id": "feasibility", "label": "\u5b9e\u65bd\u53ef\u884c\u6027", "weight": 15, "description": "\u6240\u9700\u65f6\u95f4\u3001\u80fd\u529b\u3001\u7b97\u529b\u548c\u534f\u4f5c\u6761\u4ef6\u4e0e\u73b0\u6709\u8d44\u6e90\u5339\u914d\u3002"}, {"id": "validation", "label": "\u9a8c\u8bc1\u8bbe\u8ba1", "weight": 10, "description": "\u80fd\u591f\u7528\u5408\u9002\u5bf9\u7167\u3001\u8bc4\u4ef7\u548c\u786e\u8ba4\u8d44\u6599\u68c0\u9a8c\u4e3b\u8981\u4e3b\u5f20\u3002"}], "business": [{"id": "value", "label": "\u6f5c\u5728\u51c0\u4ef7\u503c", "weight": 30, "description": "\u8ba1\u5165\u5b9e\u65bd\u548c\u8fd0\u8425\u6210\u672c\u540e\uff0c\u4ecd\u6709\u53ef\u89e3\u91ca\u7684\u589e\u6536\u3001\u964d\u672c\u6216\u51b3\u7b56\u6539\u5584\u7a7a\u95f4\u3002"}, {"id": "time", "label": "\u89c1\u6548\u65f6\u95f4", "weight": 20, "description": "\u66f4\u65e9\u83b7\u5f97\u53ef\u7528\u9a8c\u8bc1\u7ed3\u679c\uff0c\u6216\u8fbe\u5230\u5171\u540c\u7ea6\u5b9a\u7684\u4e1a\u52a1\u91cc\u7a0b\u7891\u3002"}, {"id": "cost", "label": "\u6267\u884c\u6210\u672c", "weight": 20, "description": "\u542f\u52a8\u3001\u63a5\u5165\u3001\u4eba\u5de5\u548c\u6301\u7eed\u7ef4\u62a4\u7684\u6295\u5165\u66f4\u5bb9\u6613\u627f\u53d7\u3002"}, {"id": "action", "label": "\u843d\u5730\u6761\u4ef6", "weight": 15, "description": "\u5177\u5907\u4f7f\u7528\u8005\u3001\u6267\u884c\u8d23\u4efb\u3001\u884c\u52a8\u6e20\u9053\u548c\u7ef4\u62a4\u6761\u4ef6\u3002"}, {"id": "measure", "label": "\u6548\u679c\u53ef\u6d4b\u91cf\u6027", "weight": 15, "description": "\u80fd\u591f\u8bb0\u5f55\u7ed3\u679c\u5e76\u5224\u65ad\u76f8\u5bf9\u73b0\u72b6\u662f\u5426\u4ea7\u751f\u5b9e\u9645\u6539\u5584\u3002"}]}, "submit_path": null};
 const byId = id => document.getElementById(id);
 const drafts = Object.fromEntries(Object.entries(config.profiles).map(([mode, dimensions]) => [mode,Object.fromEntries(dimensions.map(d => [d.id,d.weight]))]));
 let weights = config.mode ? drafts[config.mode] : {};
@@ -180,134 +125,4 @@ byId("confirm").addEventListener("click",async () => {
   }
 });
 selectMode(config.mode);
-</script></body></html>"""
-
-
-def render(mode=None, submit_path=None):
-    if mode is not None and mode not in PROFILES:
-        raise ValueError("Unknown mode")
-    config = {
-        "mode": mode,
-        "profiles": {key: [dict(zip(("id", "label", "weight", "description"), row)) for row in rows] for key, rows in PROFILES.items()},
-        "submit_path": submit_path,
-    }
-    return HTML.replace("__CONFIG__", json.dumps(config, ensure_ascii=True).replace("<", r"\u003c"))
-
-
-def request_browser(url):
-    try:
-        requested = webbrowser.open(url, new=2)
-    except (OSError, webbrowser.Error):
-        requested = False
-    print(("Browser open requested: " if requested else "Open or preview this page: ") + url, flush=True)
-
-
-def collect(mode, result_path, timeout, open_browser):
-    token_path = "/" + secrets.token_urlsafe(24) + "/"
-    state = {"saved": False}
-
-    class Handler(BaseHTTPRequestHandler):
-        def setup(self):
-            self.request.settimeout(3)
-            super().setup()
-
-        def log_message(self, *_args):
-            pass
-
-        def respond(self, status, body, content_type="application/json"):
-            payload = body.encode("utf-8")
-            self.send_response(status)
-            self.send_header("Content-Type", content_type + "; charset=utf-8")
-            self.send_header("Content-Length", str(len(payload)))
-            self.send_header("Cache-Control", "no-store")
-            self.send_header("Referrer-Policy", "no-referrer")
-            self.send_header("X-Content-Type-Options", "nosniff")
-            self.end_headers()
-            self.wfile.write(payload)
-
-        def do_GET(self):
-            if self.path != token_path:
-                self.respond(404, '{"error":"Not found"}')
-                return
-            self.respond(200, render(mode, token_path + "confirm"), "text/html")
-
-        def do_POST(self):
-            if self.path != token_path + "confirm" or self.headers.get("Origin") != origin:
-                self.respond(403, '{"error":"Invalid confirmation origin or path"}')
-                return
-            if self.headers.get("Content-Type", "").split(";")[0] != "application/json":
-                self.respond(415, '{"error":"JSON required"}')
-                return
-            try:
-                length = int(self.headers.get("Content-Length", "0"))
-                if not 0 < length <= 32768:
-                    raise ValueError("Invalid request size")
-                preferences = validate_preferences(json.loads(self.rfile.read(length)), expected_mode=None)
-            except (ValueError, OSError) as error:
-                self.respond(400, json.dumps({"error": str(error)}))
-                return
-            receipt = {
-                "schema_version": 1, "mode": preferences["mode"], "weights": preferences["weights"],
-                "constraints": preferences.get("constraints", ""), "confirmed": True,
-                "confirmed_at": datetime.now(timezone.utc).isoformat(),
-                "source": "local_interactive_confirmation",
-            }
-            try:
-                with result_path.open("x", encoding="utf-8") as handle:
-                    json.dump(receipt, handle, ensure_ascii=False, allow_nan=False, indent=2)
-            except OSError as error:
-                self.respond(500, json.dumps({"error": str(error)}))
-                return
-            state["saved"] = True
-            self.respond(200, '{"saved":true}')
-
-    with HTTPServer(("127.0.0.1", 0), Handler) as server:
-        origin = "http://127.0.0.1:" + str(server.server_port)
-        url = origin + token_path
-        server.timeout = 0.5
-        print("Preference page: " + url, flush=True)
-        print("Waiting for explicit confirmation; result: " + str(result_path), flush=True)
-        if open_browser:
-            request_browser(url)
-        deadline = time.monotonic() + timeout
-        while not state["saved"] and time.monotonic() < deadline:
-            server.handle_request()
-    if state["saved"]:
-        print("Confirmed preferences: " + str(result_path), flush=True)
-        return 0
-    print("No preferences confirmed. Continue waiting in the conversation; do not assume defaults.", flush=True)
-    return 3
-
-
-def main():
-    configure_console()
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--mode", choices=PROFILES, help="Only preselect a mode already explicitly chosen by the user")
-    parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--result", type=Path, help="Collect confirmation locally and save JSON here")
-    parser.add_argument("--open", action="store_true", dest="open_browser")
-    parser.add_argument("--timeout", type=int, default=600, help="Local confirmation timeout in seconds (1-3600)")
-    args = parser.parse_args()
-    try:
-        if not 1 <= args.timeout <= 3600:
-            raise ValueError("Timeout must be between 1 and 3600 seconds")
-        if args.result:
-            if args.result.resolve() == args.output.resolve():
-                raise ValueError("HTML and confirmation output paths must differ")
-            if args.result.exists():
-                raise ValueError("Confirmation file already exists; reuse it or choose a new path")
-            args.result.parent.mkdir(parents=True, exist_ok=True)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(render(args.mode), encoding="utf-8")
-        print("Generated: " + str(args.output.resolve()), flush=True)
-        if args.result:
-            return collect(args.mode, args.result.resolve(), args.timeout, args.open_browser)
-        if args.open_browser:
-            request_browser(args.output.resolve().as_uri())
-        return 0
-    except (OSError, ValueError) as error:
-        parser.exit(2, "Error: " + str(error) + "\n")
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+</script></body></html>

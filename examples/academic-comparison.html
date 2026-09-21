@@ -1,86 +1,4 @@
-#!/usr/bin/env python3
-"""Render evidence-backed candidate scores as an offline interactive HTML report."""
-
-import argparse
-import json
-import math
-import webbrowser
-from console_utils import configure_console
-from pathlib import Path
-
-
-BASES = {"已核验事实", "文献依据", "估算", "假设", "未知"}
-MATURITIES = {"机会假设", "可验证方案", "已获支持方案"}
-
-
-def require_text(obj, key, context):
-    if not isinstance(obj.get(key), str) or not obj[key].strip():
-        raise ValueError(f"{context}.{key}: requires nonempty text")
-
-
-def validate(data):
-    if not isinstance(data, dict):
-        raise ValueError("Input must be a JSON object")
-    for key in ("title", "decision", "weight_basis"):
-        require_text(data, key, "report")
-    if data.get("mode") not in ("academic", "business"):
-        raise ValueError("mode must be academic or business")
-    dimensions = data.get("dimensions")
-    candidates = data.get("candidates")
-    if not isinstance(dimensions, list) or not dimensions:
-        raise ValueError("dimensions must be a nonempty array")
-    if not isinstance(candidates, list) or not candidates:
-        raise ValueError("candidates must be a nonempty array")
-    dimension_ids = set()
-    for dimension in dimensions:
-        if not isinstance(dimension, dict):
-            raise ValueError("Each dimension must be an object")
-        for key in ("id", "label"):
-            require_text(dimension, key, "dimension")
-        if dimension["id"] in dimension_ids:
-            raise ValueError("Duplicate dimension id: " + dimension["id"])
-        dimension_ids.add(dimension["id"])
-        weight = dimension.get("weight")
-        if type(weight) not in (int, float) or not math.isfinite(weight) or weight < 0:
-            raise ValueError("Dimension weights must be finite nonnegative numbers")
-    if not math.isfinite(sum(item["weight"] for item in dimensions)) or sum(item["weight"] for item in dimensions) <= 0:
-        raise ValueError("Total dimension weight must be finite and positive")
-    candidate_ids = set()
-    for candidate in candidates:
-        if not isinstance(candidate, dict):
-            raise ValueError("Each candidate must be an object")
-        for key in (
-            "id", "name", "summary", "data_basis", "risks", "time", "cost", "next_step"
-        ):
-            require_text(candidate, key, "candidate")
-        if candidate["id"] in candidate_ids:
-            raise ValueError("Duplicate candidate id: " + candidate["id"])
-        candidate_ids.add(candidate["id"])
-        if candidate.get("maturity") not in MATURITIES:
-            raise ValueError("Unknown candidate maturity")
-        if candidate.get("eligibility") not in ("ready", "conditional", "blocked"):
-            raise ValueError("eligibility must be ready, conditional, or blocked")
-        scores = candidate.get("scores")
-        if not isinstance(scores, dict) or set(scores) != dimension_ids:
-            raise ValueError("Each candidate must include exactly the same score dimensions")
-        for dimension_id, score in scores.items():
-            if not isinstance(score, dict) or "value" not in score:
-                raise ValueError("Each score requires an explicit value or null")
-            value = score["value"]
-            if value is not None and (type(value) is not int or not 1 <= value <= 5):
-                raise ValueError("Score values must be integers 1-5 or null")
-            for key in ("reason", "evidence", "basis"):
-                require_text(score, key, candidate["id"] + "." + dimension_id)
-            if score["basis"] not in BASES:
-                raise ValueError("Unknown score basis")
-            if (value is None) != (score["basis"] == "未知"):
-                raise ValueError("Unknown scores must use null and basis 未知 together")
-    if "recommendation" in data and not isinstance(data["recommendation"], str):
-        raise ValueError("recommendation must be text")
-    return data
-
-
-HTML = r"""<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -117,7 +35,7 @@ noscript{display:block;padding:20px;background:#fff2d5}
 @media print{body{background:#fff}main{padding:0;max-width:none}.panel,.card{break-inside:avoid}.toolbar,.choice,.selection{display:none}.scroll{overflow:visible}.cards{display:block}.card{margin:12px 0}}
 </style>
 </head>
-<body><noscript>此交互报告需要JavaScript。请查看随报告提供的评分表及证据说明。</noscript>
+<body><aside style="padding:14px;background:#fff2d5;color:#573f16;text-align:center">合成样例演示 · 非真实项目成果 · 页面操作不代表真实任务确认</aside><noscript>此交互报告需要JavaScript。请查看随报告提供的评分表及证据说明。</noscript>
 <main>
 <header><div id="mode" class="eyebrow"></div><h1 id="title"></h1>
 <p id="intro" class="muted">评分帮助理解取舍，最终方案由你选择。综合分不是成功概率。</p></header>
@@ -139,7 +57,7 @@ noscript{display:block;padding:20px;background:#fff2d5}
 </main>
 <script>
 "use strict";
-const report = __REPORT_DATA__;
+const report = {"mode": "academic", "title": "\u5b66\u672f\u7248 \u00b7 \u5408\u6210\u6837\u4f8b\uff0c\u975e\u771f\u5b9e\u6210\u679c", "decision": "\u6bd4\u8f83\u4e09\u4e2a\u6f14\u793a\u5019\u9009\uff1b\u6b63\u5f0f\u4efb\u52a1\u987b\u5b9e\u9645\u5ba1\u6838\u3001\u786e\u8ba4\u504f\u597d\u5e76\u91cd\u65b0\u8bc4\u5206\u3002", "weight_basis": "\u4ec5\u4f9b\u6f14\u793a\u7684\u521d\u59cb\u6743\u91cd\uff0c\u672a\u66ff\u7528\u6237\u786e\u8ba4\uff1b\u4efb\u4e00\u5173\u952e\u7ef4\u5ea6\u672a\u77e5\u65f6\u4e0d\u663e\u793a\u5b8c\u6574\u603b\u5206\u3002", "dimensions": [{"id": "novelty", "label": "\u521b\u65b0\u5ea6", "weight": 30}, {"id": "significance", "label": "\u7814\u7a76\u610f\u4e49", "weight": 25}, {"id": "data_fit", "label": "\u6570\u636e\u9002\u914d", "weight": 20}, {"id": "feasibility", "label": "\u5b9e\u65bd\u53ef\u884c\u6027", "weight": 15}, {"id": "validation", "label": "\u9a8c\u8bc1\u8bbe\u8ba1", "weight": 10}], "candidates": [{"id": "academic-1", "name": "\u540c\u4e00\u5b66\u751f\u7684\u7ec3\u4e60\u4e0e\u6210\u7ee9\u53d8\u5316", "summary": "\u6309\u5b66\u751f\u63cf\u8ff0\u5468\u5185\u53d8\u5316\uff0c\u63d0\u51fa\u5173\u8054\u95ee\u9898\u3002", "data_basis": "\u5408\u6210\u6837\u4f8b\uff1astudent_id\u3001week\u3001practice_minutes\u3001quiz_score\uff1b4\u540d\u5408\u6210\u5b66\u751f\u54043\u5468\u3002", "risks": "\u7ec3\u4e60\u65f6\u957f\u4e0d\u662f\u968f\u673a\u5206\u914d\uff1b\u4e0d\u80fd\u89e3\u91ca\u4e3a\u56e0\u679c\u3002", "next_step": "\u5148\u505a\u5b66\u751f\u5185\u53d8\u5316\u56fe\uff0c\u5e76\u68c0\u67e5\u4e2a\u4f53\u5dee\u5f02\u3002", "time": "\u6f14\u793a\u5047\u8bbe\uff1a1\u20133\u4eba\u65e5\uff1b\u5b9e\u9645\u65e5\u5386\u5468\u671f\u5f85\u6838\u3002", "cost": "\u6f14\u793a\u5047\u8bbe\uff1a\u590d\u7528\u73b0\u6709\u4eba\u5458\uff1b\u91d1\u989d\u4e0e\u6301\u7eed\u6210\u672c\u672a\u77e5\u3002", "maturity": "\u673a\u4f1a\u5047\u8bbe", "eligibility": "conditional", "scores": {"novelty": {"value": null, "basis": "\u672a\u77e5", "reason": "\u672a\u68c0\u7d22\u6587\u732e\uff0c\u4e0d\u80fd\u786e\u8ba4\u521b\u65b0\u5ea6\u3002", "evidence": "examples/README.md\u4e2d\u7684\u6570\u636e\u8fb9\u754c\uff1b\u771f\u5b9e\u4efb\u52a1\u987b\u8865\u8bc1\u636e\u3002"}, "significance": {"value": 3, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "data_fit": {"value": 2, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "feasibility": {"value": 4, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "validation": {"value": 2, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}}}, {"id": "academic-2", "name": "\u6309\u5b66\u751f\u5212\u5206\u7684\u6cdb\u5316\u8bc4\u4f30\u8bbe\u8ba1", "summary": "\u6bd4\u8f83\u6309\u884c\u4e0e\u6309\u5b66\u751f\u5212\u5206\u6240\u5bf9\u5e94\u7684\u9884\u6d4b\u76ee\u6807\u3002", "data_basis": "\u5408\u6210\u6837\u4f8b\uff1a\u540c\u4e00student_id\u91cd\u590d\u51fa\u73b0\uff1b\u8bb0\u5f55\u6570\u4e0e\u72ec\u7acb\u5b66\u751f\u6570\u4e0d\u540c\u3002", "risks": "\u4ec54\u4f4d\u5b66\u751f\uff0c\u4f30\u8ba1\u6ce2\u52a8\u5927\uff1b\u6ca1\u6709\u65b0\u5b66\u6821\u6570\u636e\u3002", "next_step": "\u5148\u660e\u786e\u9884\u6d4b\u65b0\u5b66\u751f\u8fd8\u662f\u540c\u4e00\u5b66\u751f\u7684\u540e\u7eed\u6d4b\u9a8c\uff0c\u518d\u8bbe\u8ba1\u9a8c\u8bc1\u3002", "time": "\u6f14\u793a\u5047\u8bbe\uff1a1\u20133\u4eba\u65e5\uff1b\u5b9e\u9645\u65e5\u5386\u5468\u671f\u5f85\u6838\u3002", "cost": "\u6f14\u793a\u5047\u8bbe\uff1a\u590d\u7528\u73b0\u6709\u4eba\u5458\uff1b\u91d1\u989d\u4e0e\u6301\u7eed\u6210\u672c\u672a\u77e5\u3002", "maturity": "\u673a\u4f1a\u5047\u8bbe", "eligibility": "conditional", "scores": {"novelty": {"value": null, "basis": "\u672a\u77e5", "reason": "\u672a\u68c0\u7d22\u6587\u732e\uff0c\u4e0d\u80fd\u786e\u8ba4\u521b\u65b0\u5ea6\u3002", "evidence": "examples/README.md\u4e2d\u7684\u6570\u636e\u8fb9\u754c\uff1b\u771f\u5b9e\u4efb\u52a1\u987b\u8865\u8bc1\u636e\u3002"}, "significance": {"value": 3, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "data_fit": {"value": 2, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "feasibility": {"value": 3, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "validation": {"value": 3, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}}}, {"id": "academic-3", "name": "\u7f3a\u5931\u7ec3\u4e60\u8bb0\u5f55\u7684\u654f\u611f\u6027\u5206\u6790", "summary": "\u68c0\u67e5\u7f3a\u5931\u5904\u7406\u662f\u5426\u6539\u53d8\u63a2\u7d22\u6027\u5224\u65ad\u3002", "data_basis": "\u5408\u6210\u6837\u4f8b\uff1aS03\u7b2c2\u5468practice_minutes\u4e3a\u7a7a\uff1b\u6837\u4f8b\u53ea\u67091\u5904\u7f3a\u5931\u3002", "risks": "\u4e0d\u80fd\u4ece1\u5904\u7f3a\u5931\u63a8\u65ad\u771f\u5b9e\u7f3a\u5931\u673a\u5236\u3002", "next_step": "\u6bd4\u8f83\u4fdd\u7559\u7f3a\u5931\u4e0e\u660e\u786e\u5047\u8bbe\u4e0b\u7684\u654f\u611f\u6027\u7ed3\u679c\u3002", "time": "\u6f14\u793a\u5047\u8bbe\uff1a1\u20133\u4eba\u65e5\uff1b\u5b9e\u9645\u65e5\u5386\u5468\u671f\u5f85\u6838\u3002", "cost": "\u6f14\u793a\u5047\u8bbe\uff1a\u590d\u7528\u73b0\u6709\u4eba\u5458\uff1b\u91d1\u989d\u4e0e\u6301\u7eed\u6210\u672c\u672a\u77e5\u3002", "maturity": "\u673a\u4f1a\u5047\u8bbe", "eligibility": "conditional", "scores": {"novelty": {"value": null, "basis": "\u672a\u77e5", "reason": "\u672a\u68c0\u7d22\u6587\u732e\uff0c\u4e0d\u80fd\u786e\u8ba4\u521b\u65b0\u5ea6\u3002", "evidence": "examples/README.md\u4e2d\u7684\u6570\u636e\u8fb9\u754c\uff1b\u771f\u5b9e\u4efb\u52a1\u987b\u8865\u8bc1\u636e\u3002"}, "significance": {"value": 2, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "data_fit": {"value": 2, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "feasibility": {"value": 4, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}, "validation": {"value": 3, "basis": "\u5047\u8bbe", "reason": "\u4e3a\u6f14\u793a\u5206\u9879\u53d6\u820d\u800c\u8bbe\u7f6e\u7684\u5047\u8bbe\u5206\u6570\uff0c\u4e0d\u4ee3\u8868\u771f\u5b9e\u9879\u76ee\u8bc4\u4f30\u3002", "evidence": "\u6f14\u793a\u8bbe\u5b9a\uff1a\u5df2\u6709\u5206\u6790\u4eba\u5458\u548c\u53ef\u8bfbCSV\uff1b\u6309\u8bc4\u5206\u7ec6\u5219\u4f5c\u5047\u8bbe\u6027\u4f30\u5206\u3002"}}}], "recommendation": "\u8fd9\u91cc\u6ca1\u6709\u9884\u9009\u65b9\u6848\u3002\u8bf7\u89c2\u5bdf\u5206\u9879\u4e0e\u672a\u77e5\uff0c\u518d\u5728\u5bf9\u8bdd\u4e2d\u660e\u786e\u9009\u62e9\uff1b\u672c\u9875\u4e0d\u4f1a\u81ea\u52a8\u5f00\u59cb\u5b9e\u9a8c\u6216\u4e1a\u52a1\u8bd5\u70b9\u3002"};
 const eligibilityLabels = {ready:"可比较", conditional:"条件性参考", blocked:"暂不参与"};
 const byId = (id) => document.getElementById(id);
 function element(tag, text, className) {
@@ -280,64 +198,4 @@ byId("copy").addEventListener("click",async () => {
 });
 if (report.recommendation) { byId("advice-panel").hidden = false; byId("advice").textContent = report.recommendation; }
 refresh();
-</script></body></html>"""
-
-
-def render(data):
-    validate(data)
-    payload = json.dumps(data, ensure_ascii=True, allow_nan=False).replace("<", r"\u003c")
-    return HTML.replace("__REPORT_DATA__", payload)
-
-
-def main():
-    configure_console()
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", required=True, type=Path)
-    parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--preferences-file", type=Path, help="Apply explicitly confirmed weights from the initial preference form")
-    parser.add_argument(
-        "--open", dest="open_report", action="store_true",
-        help="Request opening the finished report in the local desktop browser; "
-             "use the host application's preview instead in remote environments",
-    )
-    args = parser.parse_args()
-    try:
-        if args.input.resolve() == args.output.resolve():
-            raise ValueError("Input and output paths must differ")
-        if args.preferences_file and args.preferences_file.resolve() == args.output.resolve():
-            raise ValueError("Preferences and output paths must differ")
-        data = json.loads(args.input.read_text(encoding="utf-8-sig"))
-        if args.preferences_file:
-            from configure_preferences import validate_preferences
-
-            validate(data)
-            preferences = validate_preferences(
-                json.loads(args.preferences_file.read_text(encoding="utf-8-sig")),
-                expected_mode=data["mode"], dimension_ids=[d["id"] for d in data["dimensions"]],
-            )
-            for dimension in data["dimensions"]:
-                dimension["weight"] = preferences["weights"][dimension["id"]]
-            data["weight_basis"] = "用户在想法生成前确认的权重；各项按相对份额统一归一化。"
-            if preferences.get("constraints"):
-                data["weight_basis"] += "另有约束：" + preferences["constraints"]
-        result = render(data)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(result, encoding="utf-8")
-    except (OSError, ValueError) as error:
-        parser.exit(2, "Error: " + str(error) + "\n")
-    print("Generated: " + str(args.output.resolve()))
-    if args.open_report:
-        report_uri = args.output.resolve().as_uri()
-        try:
-            requested = webbrowser.open(report_uri, new=2)
-        except (OSError, webbrowser.Error) as error:
-            print("Browser launch unavailable: " + str(error))
-            requested = False
-        if requested:
-            print("Browser open requested: " + report_uri)
-        else:
-            print("Report saved; use the host preview or open this file: " + report_uri)
-
-
-if __name__ == "__main__":
-    main()
+</script></body></html>
